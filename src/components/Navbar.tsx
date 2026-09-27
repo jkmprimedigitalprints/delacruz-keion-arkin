@@ -134,7 +134,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, navigate, authState
             {isOnline ? (
               <>
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span>Live Sync</span>
+                <span></span>
               </>
             ) : (
               <>
@@ -188,7 +188,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, navigate, authState
               }`}
             >
               <Shield className="w-3.5 h-3.5 text-[#6FA8DC]" />
-              <span>Family Admin</span>
+              <span>Family</span>
             </button>
           )}
 
