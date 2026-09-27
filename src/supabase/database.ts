@@ -177,6 +177,7 @@ export function isMissingTableOrSchemaError(error: unknown): boolean {
   return (
     code === 'pgrst205' ||
     code === '42p01' ||
+    msg.includes('supabase_not_configured') ||
     msg.includes('schema cache') ||
     msg.includes('could not find the table') ||
     (msg.includes('relation') && msg.includes('does not exist'))

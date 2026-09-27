@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import {
   supabase,
   SUPABASE_STORAGE_BUCKET,
-  assertSupabaseConfigured,
+  isSupabaseConfigured,
   extractSupabaseErrorMessage,
 } from '../supabase/client';
 import {
@@ -66,8 +66,6 @@ export async function uploadMediaFileToCloud(
   onRetry: (attempt: number, maxAttempts: number, err: Error) => void,
   registerCancel: (cancelFn: () => void) => void
 ): Promise<CloudUploadResult> {
-  assertSupabaseConfigured();
-
   let cancelled = false;
   registerCancel(() => {
     cancelled = true;
@@ -112,7 +110,8 @@ export async function uploadMediaFileToCloud(
   });
 
   const storagePath = `memories/${memoryId}/${cleanFileName}`;
-  const shouldAttemptBucketUpload = Date.now() > storageBucketMissingUntil;
+  const shouldAttemptBucketUpload =
+    isSupabaseConfigured && Date.now() > storageBucketMissingUntil;
 
   // 2. Upload binary file to Supabase Storage bucket if available
   if (shouldAttemptBucketUpload) {

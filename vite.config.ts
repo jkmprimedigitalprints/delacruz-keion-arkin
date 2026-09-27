@@ -222,6 +222,7 @@ function adminApiPlugin(): Plugin {
 
 export default defineConfig(() => {
   return {
+    envPrefix: ['VITE_', 'NEXT_PUBLIC_', 'SUPABASE_'],
     plugins: [react(), tailwindcss(), adminApiPlugin()],
     resolve: {
       alias: {

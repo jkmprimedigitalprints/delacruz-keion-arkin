@@ -2,14 +2,49 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 const env = (import.meta as any).env || {};
 
-const rawSupabaseUrl = (env.VITE_SUPABASE_URL || '').trim();
-const rawSupabaseAnonKey = (env.VITE_SUPABASE_ANON_KEY || '').trim();
+const DEFAULT_PROJECT_SUPABASE_URL = 'https://oxtudikykjgsssdfkmnc.supabase.co';
+const DEFAULT_PROJECT_SUPABASE_PUBLISHABLE_KEY =
+  'sb_publishable_sXSF0P09-7qy2YHQSO5w3Q_sqDbCaCb';
 
-export const SUPABASE_STORAGE_BUCKET = (env.VITE_SUPABASE_STORAGE_BUCKET || 'media').trim();
+const candidateUrl = (
+  env.VITE_SUPABASE_URL ||
+  env.NEXT_PUBLIC_SUPABASE_URL ||
+  env.SUPABASE_URL ||
+  ''
+).trim();
+
+const candidateKey = (
+  env.VITE_SUPABASE_ANON_KEY ||
+  env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+  env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY ||
+  env.SUPABASE_ANON_KEY ||
+  env.SUPABASE_PUBLISHABLE_KEY ||
+  ''
+).trim();
+
+const isCandidateValid = Boolean(
+  candidateUrl &&
+    candidateKey &&
+    candidateUrl.startsWith('http') &&
+    !candidateUrl.includes('your-project-id.supabase.co') &&
+    candidateKey !== 'your-supabase-anon-public-key'
+);
+
+const rawSupabaseUrl = isCandidateValid ? candidateUrl : DEFAULT_PROJECT_SUPABASE_URL;
+const rawSupabaseAnonKey = isCandidateValid
+  ? candidateKey
+  : DEFAULT_PROJECT_SUPABASE_PUBLISHABLE_KEY;
+
+export const SUPABASE_STORAGE_BUCKET = (
+  env.VITE_SUPABASE_STORAGE_BUCKET ||
+  env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET ||
+  env.SUPABASE_STORAGE_BUCKET ||
+  'media'
+).trim();
 
 /**
- * Checks whether valid Supabase credentials have been provided via VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.
- * Note: Never use or expose a service-role key in frontend code.
+ * Checks whether valid Supabase credentials have been provided via environment variables or project defaults.
+ * Note: Only public anon/publishable keys are used in frontend code; never service-role keys.
  */
 export const isSupabaseConfigured: boolean = Boolean(
   rawSupabaseUrl &&
@@ -19,15 +54,8 @@ export const isSupabaseConfigured: boolean = Boolean(
     rawSupabaseAnonKey !== 'your-supabase-anon-public-key'
 );
 
-if (!isSupabaseConfigured) {
-  console.info(
-    '[SUPABASE] VITE_SUPABASE_URL and/or VITE_SUPABASE_ANON_KEY are not configured yet. ' +
-      'Set them in your .env file or Vercel Environment Variables to enable Supabase PostgreSQL & Storage.'
-  );
-}
-
 /**
- * Extracts the Supabase project reference ID from VITE_SUPABASE_URL if present
+ * Extracts the Supabase project reference ID from the configured Supabase URL
  */
 export const supabaseProjectRef: string | null = (() => {
   try {
@@ -83,8 +111,6 @@ export function extractSupabaseErrorMessage(error: unknown): string {
   return String(error);
 }
 
-// Safe fallback URL/key so createClient() does not crash the React bundle at import time
-// before environment variables are configured. All operations check `assertSupabaseConfigured()`.
 const clientUrl = isSupabaseConfigured
   ? rawSupabaseUrl
   : 'https://unconfigured-project.supabase.co';
