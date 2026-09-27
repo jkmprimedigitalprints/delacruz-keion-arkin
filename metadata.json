@@ -1,0 +1,6 @@
+{
+  "name": "KEION ARKIN DE LA CRUZ - Baby Boy Memory Album",
+  "description": "Fast, realtime baby boy memory album with instant multi-device synchronization for KEION ARKIN DE LA CRUZ, born October 12, 2025.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
