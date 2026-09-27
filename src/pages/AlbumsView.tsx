@@ -10,7 +10,7 @@ interface AlbumsViewProps {
 
 export const AlbumsView: React.FC<AlbumsViewProps> = ({ navigate, onSelectAlbum }) => {
   const [albums, setAlbums] = useState<Album[]>([]);
-  const [memoryCountByAlbum, setMemoryCountByAlbum] = useState<Record<string, number>>({});
+  const [memoriesMap, setMemoriesMap] = useState<Map<string, string | null>>(new Map());
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -21,13 +21,32 @@ export const AlbumsView: React.FC<AlbumsViewProps> = ({ navigate, onSelectAlbum 
 
     const unsubMemories = listenToMemories({
       onInitialLoad: (memories) => {
-        const counts: Record<string, number> = {};
+        const nextMap = new Map<string, string | null>();
         memories.forEach((m) => {
-          if (m.albumId) {
-            counts[m.albumId] = (counts[m.albumId] || 0) + 1;
-          }
+          nextMap.set(m.id, m.albumId || null);
         });
-        setMemoryCountByAlbum(counts);
+        setMemoriesMap(nextMap);
+      },
+      onAdded: (m) => {
+        setMemoriesMap((prev) => {
+          const next = new Map(prev);
+          next.set(m.id, m.albumId || null);
+          return next;
+        });
+      },
+      onModified: (m) => {
+        setMemoriesMap((prev) => {
+          const next = new Map(prev);
+          next.set(m.id, m.albumId || null);
+          return next;
+        });
+      },
+      onRemoved: (id) => {
+        setMemoriesMap((prev) => {
+          const next = new Map(prev);
+          next.delete(id);
+          return next;
+        });
       },
     });
 
@@ -36,6 +55,13 @@ export const AlbumsView: React.FC<AlbumsViewProps> = ({ navigate, onSelectAlbum 
       unsubMemories();
     };
   }, []);
+
+  const memoryCountByAlbum: Record<string, number> = {};
+  memoriesMap.forEach((albumId) => {
+    if (albumId) {
+      memoryCountByAlbum[albumId] = (memoryCountByAlbum[albumId] || 0) + 1;
+    }
+  });
 
   const handleAlbumClick = (albumId: string) => {
     onSelectAlbum(albumId);

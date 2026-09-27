@@ -242,7 +242,7 @@ export const AdminUpload: React.FC<AdminUploadProps> = ({ navigate }) => {
             ref={fileInputRef}
             type="file"
             multiple
-            accept="image/*,video/*"
+            accept="image/*,video/*,.mp4,.mov,.webm,.avi,.mkv,.m4v,.3gp,.heic,.heif,.avif"
             className="hidden"
             onChange={(e) => handleFilesSelected(e.target.files)}
           />
@@ -355,7 +355,7 @@ export const AdminUpload: React.FC<AdminUploadProps> = ({ navigate }) => {
                 key={staged.id}
                 className="bg-white rounded-2xl border border-slate-200/80 p-3 shadow-2xs flex flex-col justify-between"
               >
-                <div className="relative aspect-4/3 rounded-xl overflow-hidden bg-slate-100 mb-3">
+                <div className="relative aspect-4/3 rounded-xl overflow-hidden bg-slate-900 mb-3">
                   {staged.type === 'photo' ? (
                     <img
                       src={staged.previewUrl}
@@ -363,9 +363,22 @@ export const AdminUpload: React.FC<AdminUploadProps> = ({ navigate }) => {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center bg-slate-900 text-sky-400">
-                      <Film className="w-10 h-10 mb-1" />
-                      <span className="text-[11px] text-slate-300">Video</span>
+                    <div className="w-full h-full relative flex flex-col items-center justify-center bg-slate-900 text-sky-400">
+                      <video
+                        src={staged.previewUrl}
+                        preload="metadata"
+                        muted
+                        playsInline
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-black/25 flex items-center justify-center pointer-events-none">
+                        <div className="w-9 h-9 rounded-full bg-white/90 text-sky-600 flex items-center justify-center shadow-sm">
+                          <Film className="w-4 h-4 fill-sky-600" />
+                        </div>
+                      </div>
+                      <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-black/60 text-white text-[10px] font-semibold">
+                        VIDEO
+                      </span>
                     </div>
                   )}
 

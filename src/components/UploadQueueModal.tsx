@@ -122,7 +122,7 @@ export const UploadQueueModal: React.FC = () => {
           {items.map((item) => (
             <div key={item.id} className="pt-2 first:pt-0 flex items-center gap-3">
               {/* Preview Thumbnail */}
-              <div className="relative w-12 h-12 rounded-xl bg-slate-100 shrink-0 overflow-hidden border border-slate-200">
+              <div className="relative w-12 h-12 rounded-xl bg-slate-900 shrink-0 overflow-hidden border border-slate-200">
                 {item.previewUrl ? (
                   item.type === 'photo' ? (
                     <img
@@ -131,8 +131,17 @@ export const UploadQueueModal: React.FC = () => {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-sky-50 text-sky-600">
-                      <Film className="w-5 h-5" />
+                    <div className="w-full h-full relative flex items-center justify-center bg-slate-900 text-sky-400">
+                      <video
+                        src={item.previewUrl}
+                        preload="metadata"
+                        muted
+                        playsInline
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-black/30 flex items-center justify-center pointer-events-none">
+                        <Film className="w-4 h-4 text-white" />
+                      </div>
                     </div>
                   )
                 ) : (
@@ -160,7 +169,7 @@ export const UploadQueueModal: React.FC = () => {
 
                 {item.status === 'starting' && (
                   <span className="text-[11px] text-sky-600 flex items-center gap-1 font-medium">
-                    <RefreshCw className="w-3 h-3 animate-spin" /> Starting upload…
+                    <RefreshCw className="w-3 h-3 animate-spin" /> Preparing...
                   </span>
                 )}
 
@@ -174,12 +183,12 @@ export const UploadQueueModal: React.FC = () => {
                         />
                       </div>
                       <span className="text-[10px] font-semibold text-sky-600">
-                        Uploading {item.progress}%
+                        Uploading... ({item.progress}%)
                       </span>
                     </div>
                     {item.isStalled && (
                       <span className="text-[10px] text-amber-600 flex items-center gap-1 mt-0.5 font-medium">
-                        <AlertTriangle className="w-3 h-3" /> Slow connection detected…
+                        <AlertTriangle className="w-3 h-3" /> Large file transfer in progress…
                       </span>
                     )}
                   </div>
@@ -187,7 +196,7 @@ export const UploadQueueModal: React.FC = () => {
 
                 {(item.status === 'finalizing' || item.status === 'syncing') && (
                   <span className="text-[11px] text-blue-600 flex items-center gap-1 font-medium">
-                    <RefreshCw className="w-3 h-3 animate-spin" /> Saving to Supabase…
+                    <RefreshCw className="w-3 h-3 animate-spin" /> Saving...
                   </span>
                 )}
 
@@ -200,7 +209,7 @@ export const UploadQueueModal: React.FC = () => {
 
                 {item.status === 'completed' && (
                   <span className="text-[11px] text-emerald-600 flex items-center gap-1 font-semibold">
-                    <CheckCircle2 className="w-3.5 h-3.5" /> Completed ✓
+                    <CheckCircle2 className="w-3.5 h-3.5" /> Completed
                   </span>
                 )}
 

@@ -8,6 +8,7 @@ interface ConfirmDialogProps {
   confirmLabel?: string;
   cancelLabel?: string;
   isDestructive?: boolean;
+  isLoading?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
 }
@@ -19,6 +20,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   confirmLabel = 'Confirm',
   cancelLabel = 'Cancel',
   isDestructive = false,
+  isLoading = false,
   onConfirm,
   onCancel,
 }) => {
@@ -46,20 +48,22 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           <button
             type="button"
             onClick={onCancel}
-            className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition"
+            disabled={isLoading}
+            className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-800 hover:bg-slate-100 disabled:opacity-50 rounded-xl transition"
           >
             {cancelLabel}
           </button>
           <button
             type="button"
             onClick={onConfirm}
-            className={`px-4 py-2 text-sm font-medium text-white rounded-xl shadow-xs transition ${
+            disabled={isLoading}
+            className={`px-4 py-2 text-sm font-medium text-white rounded-xl shadow-xs transition disabled:opacity-60 ${
               isDestructive
                 ? 'bg-rose-600 hover:bg-rose-700'
                 : 'bg-sky-600 hover:bg-sky-700'
             }`}
           >
-            {confirmLabel}
+            {isLoading ? 'Deleting...' : confirmLabel}
           </button>
         </div>
       </div>

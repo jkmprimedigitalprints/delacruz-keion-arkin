@@ -1,10 +1,15 @@
-import { saveMemoryDocument, formatSupabaseErrorMessage } from '../supabase/database';
+import {
+  saveMemoryDocument,
+  deleteAllMemoriesDocuments,
+  formatSupabaseErrorMessage,
+} from '../supabase/database';
 import { checkAdminSession } from '../supabase/auth';
 import { UploadItem, Memory } from '../types';
 import { validateMediaFile } from './mediaOptimizer';
 import {
   uploadMediaFileToCloud,
   deleteCloudMediaFiles,
+  deleteMultipleCloudMediaFiles,
 } from './cloudMediaStorage';
 
 export const MAX_IMAGE_UPLOADS = 3;
@@ -40,9 +45,6 @@ class UploadManager {
     return [...this.queue];
   }
 
-  /**
-   * Throttled UI notifications to keep the main thread responsive
-   */
   private notify(immediate = false) {
     const now = Date.now();
     const throttleMs = 80;
@@ -167,10 +169,10 @@ class UploadManager {
       return;
     }
 
-    // Reuse the exact same item.id so retrying upserts the same Supabase row without duplicates
+    // Reuse the exact same item.id and preserve item.uploadedMedia if Storage already succeeded
     item.status = 'queued';
-    item.progress = 0;
-    item.bytesTransferred = 0;
+    item.progress = item.uploadedMedia ? 88 : 0;
+    item.bytesTransferred = item.uploadedMedia ? Math.round(item.size * 0.88) : 0;
     item.retryAttempt = undefined;
     item.error = undefined;
     item.isStalled = false;
@@ -250,7 +252,6 @@ class UploadManager {
       if (!nextVideo) break;
 
       nextVideo.status = 'starting';
-      nextVideo.progress = 0;
       nextVideo.isStalled = false;
       videos++;
       this.startUpload(nextVideo);
@@ -261,7 +262,6 @@ class UploadManager {
       if (!nextImage) break;
 
       nextImage.status = 'starting';
-      nextImage.progress = 0;
       nextImage.isStalled = false;
       images++;
       this.startUpload(nextImage);
@@ -285,78 +285,91 @@ class UploadManager {
     const isSessionActive = await checkAdminSession();
     if (!isSessionActive) {
       item.status = 'failed';
-      item.error = 'Sync Failed: Admin session expired. Please sign in again.';
+      item.error = 'Admin session expired. Please sign in again.';
       this.notify(true);
       this.processQueue();
       return;
     }
 
-    // 2. Setup Watchdog for UI stall indicator during large file preparation
-    let lastBytes = 0;
+    // 2. Setup Watchdog for UI stall indicator
+    let lastBytes = item.bytesTransferred || 0;
     let lastProgressTime = Date.now();
 
     const watchdog = setInterval(() => {
       const timeSinceProgress = Date.now() - lastProgressTime;
-      if (timeSinceProgress > 15000 && item.status === 'uploading') {
+      if (timeSinceProgress > 35_000 && item.status === 'uploading') {
         item.isStalled = true;
         this.notify(true);
       }
-    }, 4000);
+    }, 5000);
 
     this.watchdogMap.set(uniqueId, watchdog);
 
-    try {
-      item.status = 'uploading';
-      item.retryAttempt = undefined;
-      this.notify(true);
+    let storageCompletedForThisItem = Boolean(item.uploadedMedia);
 
-      // 3. Upload file to Supabase Storage (with hard timeout & 3 retries)
-      const uploadResult = await uploadMediaFileToCloud(
-        uniqueId,
-        item.file,
-        item.type,
-        ({ bytesTransferred, totalBytes, progress }) => {
-          if (item.status === ('cancelled' as any)) return;
-          item.bytesTransferred = bytesTransferred;
-          item.totalBytes = totalBytes;
-          if (bytesTransferred > lastBytes) {
-            lastBytes = bytesTransferred;
-            lastProgressTime = Date.now();
+    try {
+      // 3. Upload file to Supabase Storage bucket `media` (skip if already uploaded on a previous attempt)
+      let uploadResult = item.uploadedMedia;
+
+      if (!uploadResult) {
+        item.status = 'starting';
+        item.retryAttempt = undefined;
+        this.notify(true);
+
+        uploadResult = await uploadMediaFileToCloud(
+          uniqueId,
+          item.file,
+          item.type,
+          ({ bytesTransferred, totalBytes, progress }) => {
+            if (item.status === ('cancelled' as any)) return;
+            item.bytesTransferred = bytesTransferred;
+            item.totalBytes = totalBytes;
+            if (bytesTransferred > lastBytes) {
+              lastBytes = bytesTransferred;
+              lastProgressTime = Date.now();
+              item.isStalled = false;
+            }
+            if (item.status !== 'retrying') {
+              item.status = progress <= 15 ? 'starting' : 'uploading';
+            }
+            item.progress = Math.min(88, progress);
+            this.notify(false);
+          },
+          (attempt) => {
+            if (item.status === ('cancelled' as any)) return;
+            item.status = 'retrying';
+            item.retryAttempt = attempt;
             item.isStalled = false;
+            lastProgressTime = Date.now();
+            this.notify(true);
+          },
+          (cancelFn) => {
+            this.cancelMap.set(uniqueId, cancelFn);
           }
-          if (item.status !== 'retrying') {
-            item.status = 'uploading';
-          }
-          item.progress = Math.min(92, progress);
-          this.notify(false);
-        },
-        (attempt) => {
-          if (item.status === ('cancelled' as any)) return;
-          item.status = 'retrying';
-          item.retryAttempt = attempt;
-          item.isStalled = false;
-          lastProgressTime = Date.now();
-          this.notify(true);
-        },
-        (cancelFn) => {
-          this.cancelMap.set(uniqueId, cancelFn);
-        }
-      );
+        );
+
+        // Cache the completed Storage upload result on the item so if the DB insert fails,
+        // retrying will not re-upload the binary file to Storage.
+        item.uploadedMedia = uploadResult;
+        item.storagePath = uploadResult.storagePath;
+        storageCompletedForThisItem = true;
+      }
 
       if (item.status === ('cancelled' as any)) {
         return;
       }
 
-      // 4. Write authoritative record to Supabase PostgreSQL (10s timeout + max 3 attempts)
+      // 4. INSERT corresponding row into Supabase PostgreSQL `public.memories`
       item.status = 'syncing';
       item.retryAttempt = undefined;
-      item.progress = 95;
+      item.progress = 94;
       this.notify(true);
 
       const memoryDateObj = item.memoryDate ? new Date(item.memoryDate) : new Date();
       const cleanDefaultTitle = item.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
 
       const memoryPayload: Partial<Memory> = {
+        id: uniqueId,
         type: item.type,
         title: (item.title || cleanDefaultTitle).slice(0, 150),
         caption: (item.caption || '').slice(0, 1000),
@@ -374,7 +387,7 @@ class UploadManager {
       };
 
       await saveMemoryDocument(uniqueId, memoryPayload, {
-        timeoutMs: 10_000,
+        timeoutMs: 15_000,
         maxAttempts: 3,
         isCancelled: () => item.status === ('cancelled' as any),
         onRetry: (attempt) => {
@@ -385,7 +398,7 @@ class UploadManager {
         },
       });
 
-      // 5. Mark Completed ONLY after Supabase confirms the database write succeeded
+      // 5. Mark Completed ONLY after `public.memories` database INSERT succeeded
       item.storagePath = uploadResult.storagePath;
       item.recordId = uniqueId;
       item.retryAttempt = undefined;
@@ -401,7 +414,12 @@ class UploadManager {
       } else {
         item.status = 'failed';
         item.retryAttempt = undefined;
-        item.error = formatSupabaseErrorMessage(err);
+        const formatted = formatSupabaseErrorMessage(err);
+        if (storageCompletedForThisItem) {
+          item.error = `Upload failed while saving to the database. ${formatted}`;
+        } else {
+          item.error = formatted;
+        }
       }
     } finally {
       this.clearWatchdog(uniqueId);
@@ -415,6 +433,18 @@ class UploadManager {
     memory: Memory
   ): Promise<{ success: boolean; storageWarning?: boolean }> {
     return deleteCloudMediaFiles(memory.storagePath, memory.id);
+  }
+
+  public async deleteAllMemoriesWithFiles(): Promise<{
+    deletedCount: number;
+    storageWarning?: boolean;
+  }> {
+    const { deletedCount, deletedIds, storagePaths } = await deleteAllMemoriesDocuments();
+    if (storagePaths.length > 0) {
+      const { storageWarning } = await deleteMultipleCloudMediaFiles(storagePaths, deletedIds);
+      return { deletedCount, storageWarning };
+    }
+    return { deletedCount };
   }
 }
 

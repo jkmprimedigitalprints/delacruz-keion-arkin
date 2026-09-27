@@ -11,7 +11,7 @@ const ALBUMS_TABLE = 'albums';
 const SETTINGS_TABLE = 'baby_settings';
 const BABY_PROFILE_ID = 'babyProfile';
 
-export const SUPABASE_WRITE_TIMEOUT_MS = 10_000; // 10 seconds hard timeout per attempt
+export const SUPABASE_WRITE_TIMEOUT_MS = 15_000; // 15 seconds hard timeout per DB attempt
 export const MAX_SUPABASE_RETRIES = 3;
 
 export const DEFAULT_BABY_SETTINGS: BabySettings = {
@@ -73,58 +73,7 @@ create table if not exists public.baby_settings (
 
 insert into public.baby_settings (id, baby_name, birth_date, hero_quote, hero_subtitle, cover_photo_url)
 values ('babyProfile', 'KEION ARKIN DE LA CRUZ', '2025-10-12', 'Little moments, Big memories', 'Every little smile, crawl, and giggle becomes a treasure worth keeping forever.', null)
-on conflict (id) do nothing;
-
-alter table public.albums enable row level security;
-alter table public.memories enable row level security;
-alter table public.baby_settings enable row level security;
-
-drop policy if exists "Allow public read access on albums" on public.albums;
-create policy "Allow public read access on albums" on public.albums for select to anon, authenticated using (true);
-drop policy if exists "Allow family admin write access on albums" on public.albums;
-create policy "Allow family admin write access on albums" on public.albums for all to anon, authenticated using (true) with check (true);
-
-drop policy if exists "Allow public read access on memories" on public.memories;
-create policy "Allow public read access on memories" on public.memories for select to anon, authenticated using (true);
-drop policy if exists "Allow family admin write access on memories" on public.memories;
-create policy "Allow family admin write access on memories" on public.memories for all to anon, authenticated using (true) with check (true);
-
-drop policy if exists "Allow public read access on baby_settings" on public.baby_settings;
-create policy "Allow public read access on baby_settings" on public.baby_settings for select to anon, authenticated using (true);
-drop policy if exists "Allow family admin write access on baby_settings" on public.baby_settings;
-create policy "Allow family admin write access on baby_settings" on public.baby_settings for all to anon, authenticated using (true) with check (true);
-
-alter table public.albums replica identity full;
-alter table public.memories replica identity full;
-alter table public.baby_settings replica identity full;
-
-do $$
-begin
-  if not exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'albums') then
-    alter publication supabase_realtime add table public.albums;
-  end if;
-  if not exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'memories') then
-    alter publication supabase_realtime add table public.memories;
-  end if;
-  if not exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'baby_settings') then
-    alter publication supabase_realtime add table public.baby_settings;
-  end if;
-end $$;
-
-insert into storage.buckets (id, name, public)
-values ('media', 'media', true), ('memories', 'memories', true)
-on conflict (id) do update set public = true;
-
-drop policy if exists "Public read access for media buckets" on storage.objects;
-create policy "Public read access for media buckets" on storage.objects for select to anon, authenticated using (bucket_id in ('media', 'memories'));
-drop policy if exists "Family admin upload access for media buckets" on storage.objects;
-create policy "Family admin upload access for media buckets" on storage.objects for insert to anon, authenticated with check (bucket_id in ('media', 'memories'));
-drop policy if exists "Family admin update access for media buckets" on storage.objects;
-create policy "Family admin update access for media buckets" on storage.objects for update to anon, authenticated using (bucket_id in ('media', 'memories')) with check (bucket_id in ('media', 'memories'));
-drop policy if exists "Family admin delete access for media buckets" on storage.objects;
-create policy "Family admin delete access for media buckets" on storage.objects for delete to anon, authenticated using (bucket_id in ('media', 'memories'));
-
-notify pgrst, 'reload schema';`;
+on conflict (id) do nothing;`;
 
 export interface MemoriesListenerCallbacks {
   onInitialLoad?: (memories: Memory[]) => void;
@@ -132,6 +81,14 @@ export interface MemoriesListenerCallbacks {
   onModified?: (memory: Memory) => void;
   onRemoved?: (memoryId: string) => void;
   onError?: (error: Error) => void;
+}
+
+export interface MemoryStatistics {
+  totalMemories: number;
+  totalPhotos: number;
+  totalVideos: number;
+  totalAlbums: number;
+  latestMemory: Memory | null;
 }
 
 export interface RetryOptions {
@@ -142,7 +99,7 @@ export interface RetryOptions {
 }
 
 // ============================================================================
-// Schema Provisioning Status & Fallback Store (Before SQL Script is Executed)
+// Schema Provisioning Status
 // ============================================================================
 
 let supabaseSchemaMissing = false;
@@ -177,181 +134,25 @@ export function isMissingTableOrSchemaError(error: unknown): boolean {
   return (
     code === 'pgrst205' ||
     code === '42p01' ||
-    msg.includes('supabase_not_configured') ||
     msg.includes('schema cache') ||
     msg.includes('could not find the table') ||
     (msg.includes('relation') && msg.includes('does not exist'))
   );
 }
 
-// IndexedDB + Server API Fallback Store so uploads/edits never fail if tables are not yet created
-const IDB_NAME = 'keion_supabase_fallback_v1';
-const IDB_STORE = 'kv';
-
-function openFallbackIdb(): Promise<IDBDatabase | null> {
-  if (typeof indexedDB === 'undefined') return Promise.resolve(null);
-  return new Promise((resolve) => {
-    try {
-      const req = indexedDB.open(IDB_NAME, 1);
-      req.onupgradeneeded = () => {
-        const db = req.result;
-        if (!db.objectStoreNames.contains(IDB_STORE)) {
-          db.createObjectStore(IDB_STORE);
-        }
-      };
-      req.onsuccess = () => resolve(req.result);
-      req.onerror = () => resolve(null);
-    } catch {
-      resolve(null);
-    }
-  });
-}
-
-async function idbGet<T>(key: string): Promise<T | null> {
-  const db = await openFallbackIdb();
-  if (!db) return null;
-  return new Promise((resolve) => {
-    try {
-      const tx = db.transaction(IDB_STORE, 'readonly');
-      const req = tx.objectStore(IDB_STORE).get(key);
-      req.onsuccess = () => resolve((req.result as T) ?? null);
-      req.onerror = () => resolve(null);
-    } catch {
-      resolve(null);
-    }
-  });
-}
-
-async function idbSet<T>(key: string, value: T): Promise<void> {
-  const db = await openFallbackIdb();
-  if (!db) return;
-  return new Promise((resolve) => {
-    try {
-      const tx = db.transaction(IDB_STORE, 'readwrite');
-      tx.objectStore(IDB_STORE).put(value, key);
-      tx.oncomplete = () => resolve();
-      tx.onerror = () => resolve();
-    } catch {
-      resolve();
-    }
-  });
-}
-
-interface FallbackDatabaseState {
-  memories: Record<string, Record<string, any>>;
-  albums: Record<string, Record<string, any>>;
-  baby_settings: Record<string, any> | null;
-}
-
-async function loadFallbackDatabaseState(): Promise<FallbackDatabaseState> {
-  const localState = (await idbGet<FallbackDatabaseState>('db_state')) || {
-    memories: {},
-    albums: {},
-    baby_settings: null,
+export function logSupabaseDatabaseError(context: string, error: unknown): void {
+  const err = error as {
+    message?: string;
+    details?: string | null;
+    hint?: string | null;
+    code?: string;
   };
-
-  try {
-    const res = await fetch('/api/db');
-    if (res.ok) {
-      const serverState = await res.json();
-      const merged: FallbackDatabaseState = {
-        memories: { ...(serverState?.memories || {}), ...(localState.memories || {}) },
-        albums: { ...(serverState?.albums || {}), ...(localState.albums || {}) },
-        baby_settings: localState.baby_settings || serverState?.baby_settings || null,
-      };
-      await idbSet('db_state', merged);
-      return merged;
-    }
-  } catch {}
-
-  return localState;
-}
-
-async function saveFallbackDatabaseEntry(
-  table: 'memories' | 'albums' | 'baby_settings',
-  action: 'upsert' | 'delete',
-  row?: Record<string, any>,
-  id?: string
-): Promise<void> {
-  const current = (await idbGet<FallbackDatabaseState>('db_state')) || {
-    memories: {},
-    albums: {},
-    baby_settings: null,
-  };
-
-  if (table === 'memories') {
-    if (action === 'delete' && id) {
-      delete current.memories[id];
-    } else if (row && row.id) {
-      current.memories[row.id] = { ...(current.memories[row.id] || {}), ...row };
-    }
-  } else if (table === 'albums') {
-    if (action === 'delete' && id) {
-      delete current.albums[id];
-    } else if (row && row.id) {
-      current.albums[row.id] = { ...(current.albums[row.id] || {}), ...row };
-    }
-  } else if (table === 'baby_settings' && row) {
-    current.baby_settings = { ...(current.baby_settings || {}), ...row };
-  }
-
-  await idbSet('db_state', current);
-
-  try {
-    await fetch('/api/db', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ table, action, row, id }),
-    });
-  } catch {}
-}
-
-/**
- * When Supabase PostgreSQL tables become available after running supabase/schema.sql,
- * automatically sync any fallback rows into Supabase PostgreSQL.
- */
-let isAutoSyncingFallback = false;
-async function syncFallbackRecordsToSupabase(): Promise<void> {
-  if (isAutoSyncingFallback || !isSupabaseConfigured) return;
-  isAutoSyncingFallback = true;
-
-  try {
-    const state = await idbGet<FallbackDatabaseState>('db_state');
-    if (!state) return;
-
-    const albumRows = Object.values(state.albums || {});
-    if (albumRows.length > 0) {
-      const { error } = await supabase.from(ALBUMS_TABLE).upsert(albumRows, { onConflict: 'id' });
-      if (!error) {
-        state.albums = {};
-      }
-    }
-
-    const memoryRows = Object.values(state.memories || {});
-    if (memoryRows.length > 0) {
-      const { error } = await supabase
-        .from(MEMORIES_TABLE)
-        .upsert(memoryRows, { onConflict: 'id' });
-      if (!error) {
-        state.memories = {};
-      }
-    }
-
-    if (state.baby_settings) {
-      const { error } = await supabase
-        .from(SETTINGS_TABLE)
-        .upsert(state.baby_settings, { onConflict: 'id' });
-      if (!error) {
-        state.baby_settings = null;
-      }
-    }
-
-    await idbSet('db_state', state);
-  } catch {
-    // Ignore background migration errors
-  } finally {
-    isAutoSyncingFallback = false;
-  }
+  console.warn(context, {
+    message: err?.message || extractSupabaseErrorMessage(error),
+    details: err?.details ?? null,
+    hint: err?.hint ?? null,
+    code: err?.code ?? null,
+  });
 }
 
 // ============================================================================
@@ -409,31 +210,44 @@ export function mapRowToBabySettings(row: Record<string, any>): BabySettings {
 // ============================================================================
 
 export function formatSupabaseErrorMessage(error: unknown): string {
-  const err = error as { code?: string };
-  const code = String(err?.code || '').toLowerCase();
+  const err = error as {
+    message?: string;
+    details?: string | null;
+    hint?: string | null;
+    code?: string;
+  };
+  const code = String(err?.code || '').trim();
   const msg = extractSupabaseErrorMessage(error);
+  const details = typeof err?.details === 'string' && err.details.trim() ? err.details.trim() : '';
+  const hint = typeof err?.hint === 'string' && err.hint.trim() ? err.hint.trim() : '';
   const lowerMsg = msg.toLowerCase();
 
+  const extraParts: string[] = [];
+  if (code) extraParts.push(`code: ${code}`);
+  if (details) extraParts.push(`details: ${details}`);
+  if (hint) extraParts.push(`hint: ${hint}`);
+  const suffix = extraParts.length > 0 ? ` (${extraParts.join(' | ')})` : '';
+
   if (msg.includes('SUPABASE_NOT_CONFIGURED')) {
-    return 'Sync Failed: Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your environment variables.';
+    return 'Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your environment variables.';
   }
   if (msg.includes('SUPABASE_TIMEOUT')) {
-    return 'Sync Failed: Supabase did not respond within 10 seconds. Check your connection and click Retry.';
+    return 'Supabase did not respond in time. Check your connection and click Retry.';
   }
-  if (code === '42501' || lowerMsg.includes('row-level security')) {
-    return 'Sync Failed: Permission denied by Supabase Row Level Security (RLS). Run supabase/schema.sql in your Supabase SQL Editor.';
+  if (code.toLowerCase() === '42501' || lowerMsg.includes('row-level security')) {
+    return `Permission denied by Supabase Row Level Security: ${msg}${suffix}`;
   }
   if (isMissingTableOrSchemaError(error)) {
-    return 'Sync Failed: Supabase tables do not exist yet. Run supabase/schema.sql in your Supabase SQL Editor.';
+    return `Table not found in Supabase: ${msg}${suffix}`;
   }
   if (lowerMsg.includes('failed to fetch') || lowerMsg.includes('network')) {
-    return 'Sync Failed: Unable to reach Supabase server. Check your internet connection and VITE_SUPABASE_URL.';
+    return 'Unable to reach Supabase server. Check your internet connection.';
   }
   if (lowerMsg.includes('jwt') || lowerMsg.includes('invalid api key')) {
-    return 'Sync Failed: Invalid VITE_SUPABASE_ANON_KEY. Check your Supabase project API keys.';
+    return 'Invalid Supabase API key. Check VITE_SUPABASE_ANON_KEY.';
   }
 
-  return msg.startsWith('Sync Failed:') ? msg : `Sync Failed: ${msg}`;
+  return `${msg}${suffix}`;
 }
 
 function isNonRetryableSupabaseError(error: unknown): boolean {
@@ -446,7 +260,6 @@ function isNonRetryableSupabaseError(error: unknown): boolean {
     msg.includes('supabase_not_configured') ||
     msg.includes('upload_cancelled') ||
     msg.includes('bucket not found') ||
-    msg.includes('the resource was not found') ||
     code === '42501' || // RLS violation
     code === '42p01' || // Undefined table
     code === 'pgrst205' || // Table not in PostgREST schema cache
@@ -457,8 +270,7 @@ function isNonRetryableSupabaseError(error: unknown): boolean {
 }
 
 /**
- * Wraps a single promise with a hard timeout (default 10s).
- * Rejects with an explicit SUPABASE_TIMEOUT error if Supabase does not respond in time.
+ * Wraps a single promise with a hard timeout.
  */
 export function withHardTimeout<T>(
   promiseLike: PromiseLike<T>,
@@ -479,16 +291,13 @@ export function withHardTimeout<T>(
 }
 
 /**
- * Executes an idempotent Supabase write operation with:
- * - Hard timeout per attempt (10s default)
- * - Up to 3 attempts with exponential backoff (1.5s -> 3.5s) for transient failures
- * - Immediate exit (no wasted retries) for non-retryable schema/bucket errors
+ * Executes an idempotent Supabase write operation with hard timeout & up to 3 attempts
  */
 export async function executeSupabaseWriteWithRetry<T>(
   recordId: string,
   table: string,
   operationLabel: string,
-  operationFn: () => Promise<T>,
+  operationFn: (attempt: number) => Promise<T>,
   options: RetryOptions = {}
 ): Promise<T> {
   assertSupabaseConfigured();
@@ -503,18 +312,11 @@ export async function executeSupabaseWriteWithRetry<T>(
       throw new Error('UPLOAD_CANCELLED');
     }
 
-    console.info(
-      `[SUPABASE] write started (table: ${table}, id: ${recordId}, op: ${operationLabel}, attempt: ${attempt}/${maxAttempts})`
-    );
-
     try {
       const result = await withHardTimeout(
-        operationFn(),
+        operationFn(attempt),
         timeoutMs,
         `${operationLabel} ${table}/${recordId}`
-      );
-      console.info(
-        `[SUPABASE] write completed (table: ${table}, id: ${recordId}, op: ${operationLabel}, attempt: ${attempt}/${maxAttempts})`
       );
       return result;
     } catch (err: any) {
@@ -526,21 +328,14 @@ export async function executeSupabaseWriteWithRetry<T>(
       }
 
       if (isNonRetryableSupabaseError(err)) {
-        console.info(
-          `[SUPABASE] non-retryable response (table: ${table}, id: ${recordId}, op: ${operationLabel}): ${errMsg}`
-        );
         break;
       }
-
-      console.warn(
-        `[SUPABASE] write attempt ${attempt}/${maxAttempts} failed (table: ${table}, id: ${recordId}, op: ${operationLabel}): ${errMsg}`
-      );
 
       if (attempt < maxAttempts) {
         const backoffMs = attempt === 1 ? 1500 : 3500 * Math.pow(1.5, attempt - 2);
         const nextAttempt = attempt + 1;
-        console.info(
-          `[SUPABASE] retry (table: ${table}, id: ${recordId}, attempt: ${nextAttempt}/${maxAttempts}, backoffMs: ${backoffMs})`
+        console.warn(
+          `[SUPABASE] Retry scheduled (table: ${table}, id: ${recordId}, attempt: ${nextAttempt}/${maxAttempts}, backoffMs: ${backoffMs})`
         );
         options.onRetry?.(nextAttempt, maxAttempts, new Error(errMsg));
         await new Promise((resolve) => setTimeout(resolve, backoffMs));
@@ -552,7 +347,7 @@ export async function executeSupabaseWriteWithRetry<T>(
 }
 
 // ============================================================================
-// Active Listener Registry + Supabase Realtime Broadcast Channel
+// Active Listener Registry for Confirmed Database Writes + Realtime
 // ============================================================================
 
 type MemoryEventSubscriber = (
@@ -562,45 +357,19 @@ type MemoryEventSubscriber = (
 ) => void;
 type AlbumEventSubscriber = () => void;
 type SettingsEventSubscriber = (settings: BabySettings) => void;
+type StatisticsEventSubscriber = () => void;
 
 const memoryEventSubscribers = new Set<MemoryEventSubscriber>();
 const albumEventSubscribers = new Set<AlbumEventSubscriber>();
 const settingsEventSubscribers = new Set<SettingsEventSubscriber>();
+const statisticsEventSubscribers = new Set<StatisticsEventSubscriber>();
 
-let broadcastChannel: ReturnType<typeof supabase.channel> | null = null;
-
-function ensureRealtimeBroadcastChannel() {
-  if (!isSupabaseConfigured || broadcastChannel) return broadcastChannel;
-
-  broadcastChannel = supabase
-    .channel('keion-live-broadcast')
-    .on('broadcast', { event: 'memory_change' }, ({ payload }) => {
-      if (!payload) return;
-      const { eventType, memory, deletedId } = payload;
-      memoryEventSubscribers.forEach((cb) => {
-        try {
-          cb(eventType, memory, deletedId);
-        } catch {}
-      });
-    })
-    .on('broadcast', { event: 'album_change' }, () => {
-      albumEventSubscribers.forEach((cb) => {
-        try {
-          cb();
-        } catch {}
-      });
-    })
-    .on('broadcast', { event: 'settings_change' }, ({ payload }) => {
-      if (!payload?.settings) return;
-      settingsEventSubscribers.forEach((cb) => {
-        try {
-          cb(payload.settings);
-        } catch {}
-      });
-    })
-    .subscribe();
-
-  return broadcastChannel;
+function notifyStatisticsRefresh() {
+  statisticsEventSubscribers.forEach((cb) => {
+    try {
+      cb();
+    } catch {}
+  });
 }
 
 function broadcastConfirmedMemoryChange(
@@ -613,15 +382,7 @@ function broadcastConfirmedMemoryChange(
       cb(eventType, memory, deletedId);
     } catch {}
   });
-
-  try {
-    const ch = ensureRealtimeBroadcastChannel();
-    ch?.send({
-      type: 'broadcast',
-      event: 'memory_change',
-      payload: { eventType, memory, deletedId },
-    }).catch(() => {});
-  } catch {}
+  notifyStatisticsRefresh();
 }
 
 function broadcastConfirmedAlbumChange() {
@@ -630,15 +391,7 @@ function broadcastConfirmedAlbumChange() {
       cb();
     } catch {}
   });
-
-  try {
-    const ch = ensureRealtimeBroadcastChannel();
-    ch?.send({
-      type: 'broadcast',
-      event: 'album_change',
-      payload: { updatedAt: Date.now() },
-    }).catch(() => {});
-  } catch {}
+  notifyStatisticsRefresh();
 }
 
 function broadcastConfirmedSettingsChange(settings: BabySettings) {
@@ -647,15 +400,136 @@ function broadcastConfirmedSettingsChange(settings: BabySettings) {
       cb(settings);
     } catch {}
   });
+}
 
-  try {
-    const ch = ensureRealtimeBroadcastChannel();
-    ch?.send({
-      type: 'broadcast',
-      event: 'settings_change',
-      payload: { settings },
-    }).catch(() => {});
-  } catch {}
+// ============================================================================
+// Authoritative Database Statistics (`public.memories` & `public.albums`)
+// ============================================================================
+
+/**
+ * Queries exact COUNT(*) statistics directly from `public.memories` and `public.albums`
+ * in Supabase PostgreSQL — never relying on paginated arrays or local caches.
+ */
+export async function fetchMemoryStatistics(_isAdmin = true): Promise<MemoryStatistics> {
+  assertSupabaseConfigured();
+
+  const totalQuery = supabase.from(MEMORIES_TABLE).select('*', { count: 'exact', head: true });
+  const photoQuery = supabase
+    .from(MEMORIES_TABLE)
+    .select('*', { count: 'exact', head: true })
+    .eq('type', 'photo');
+  const videoQuery = supabase
+    .from(MEMORIES_TABLE)
+    .select('*', { count: 'exact', head: true })
+    .eq('type', 'video');
+  const albumQuery = supabase.from(ALBUMS_TABLE).select('*', { count: 'exact', head: true });
+  const latestQuery = supabase
+    .from(MEMORIES_TABLE)
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  const [totalRes, photoRes, videoRes, albumRes, latestRes] = await withHardTimeout(
+    Promise.all([totalQuery, photoQuery, videoQuery, albumQuery, latestQuery]),
+    SUPABASE_WRITE_TIMEOUT_MS,
+    'COUNT public.memories statistics'
+  );
+
+  if (totalRes.error) {
+    logSupabaseDatabaseError('[SUPABASE] Statistics count error (memories):', totalRes.error);
+    throw totalRes.error;
+  }
+  if (photoRes.error) {
+    logSupabaseDatabaseError('[SUPABASE] Statistics count error (photos):', photoRes.error);
+    throw photoRes.error;
+  }
+  if (videoRes.error) {
+    logSupabaseDatabaseError('[SUPABASE] Statistics count error (videos):', videoRes.error);
+    throw videoRes.error;
+  }
+  if (albumRes.error) {
+    logSupabaseDatabaseError('[SUPABASE] Statistics count error (albums):', albumRes.error);
+    throw albumRes.error;
+  }
+
+  const totalPhotos = photoRes.count ?? 0;
+  const totalVideos = videoRes.count ?? 0;
+  const totalMemories = totalRes.count ?? totalPhotos + totalVideos;
+  const totalAlbums = albumRes.count ?? 0;
+  const latestMemory = latestRes.data ? mapRowToMemory(latestRes.data) : null;
+
+  const stats: MemoryStatistics = {
+    totalMemories,
+    totalPhotos,
+    totalVideos,
+    totalAlbums,
+    latestMemory,
+  };
+
+  console.log('[SUPABASE] Statistics refreshed', stats);
+  return stats;
+}
+
+/**
+ * Subscribes to live authoritative statistics from `public.memories` and `public.albums`.
+ * Automatically refreshes on INSERT, UPDATE, and DELETE across all connected devices.
+ */
+export function listenToMemoryStatistics(
+  onStatsUpdate: (stats: MemoryStatistics) => void,
+  onError?: (error: Error) => void,
+  isAdmin = true
+): () => void {
+  let active = true;
+
+  const refresh = async () => {
+    if (!active) return;
+    if (!isSupabaseConfigured) {
+      onError?.(new Error('Supabase is not configured.'));
+      return;
+    }
+
+    try {
+      const stats = await fetchMemoryStatistics(isAdmin);
+      if (!active) return;
+      setSupabaseSchemaMissing(false);
+      onStatsUpdate(stats);
+    } catch (err: any) {
+      if (!active) return;
+      if (isMissingTableOrSchemaError(err)) {
+        setSupabaseSchemaMissing(true);
+      }
+      onError?.(new Error(formatSupabaseErrorMessage(err)));
+    }
+  };
+
+  refresh();
+  statisticsEventSubscribers.add(refresh);
+
+  const channelName = `realtime:stats:${Math.random().toString(36).slice(2, 9)}`;
+  const channel = supabase
+    .channel(channelName)
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: MEMORIES_TABLE },
+      () => {
+        if (active) refresh();
+      }
+    )
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: ALBUMS_TABLE },
+      () => {
+        if (active) refresh();
+      }
+    )
+    .subscribe();
+
+  return () => {
+    active = false;
+    statisticsEventSubscribers.delete(refresh);
+    supabase.removeChannel(channel).catch(() => {});
+  };
 }
 
 // ============================================================================
@@ -663,8 +537,8 @@ function broadcastConfirmedSettingsChange(settings: BabySettings) {
 // ============================================================================
 
 /**
- * Realtime listener for memories using Supabase PostgreSQL & `postgres_changes`.
- * Automatically receives initial rows and live INSERT / UPDATE / DELETE events across all devices.
+ * Fetches all memories directly from `public.memories` and subscribes to
+ * Supabase Realtime `postgres_changes` (INSERT, UPDATE, DELETE).
  */
 export function listenToMemories(
   callbacks: MemoriesListenerCallbacks,
@@ -677,57 +551,39 @@ export function listenToMemories(
   } = {}
 ): () => void {
   let active = true;
-  const pageSize = options.pageSize || 150;
-
-  ensureRealtimeBroadcastChannel();
-
-  const loadFromFallback = async () => {
-    const fallbackState = await loadFallbackDatabaseState();
-    if (!active) return;
-
-    let list = Object.values(fallbackState.memories || {}).map(mapRowToMemory);
-    if (!options.isAdmin) {
-      list = list.filter((m) => m.published !== false);
-    }
-    if (options.albumId) {
-      list = list.filter((m) => m.albumId === options.albumId);
-    }
-    if (options.type && options.type !== 'all') {
-      list = list.filter((m) => m.type === options.type);
-    }
-    list.sort((a, b) => {
-      const tA = new Date(a.memoryDate as any).getTime() || 0;
-      const tB = new Date(b.memoryDate as any).getTime() || 0;
-      return options.sortOrder === 'oldest' ? tA - tB : tB - tA;
-    });
-
-    callbacks.onInitialLoad?.(list.slice(0, pageSize));
-  };
 
   if (!isSupabaseConfigured) {
-    loadFromFallback();
+    callbacks.onInitialLoad?.([]);
     return () => {
       active = false;
     };
   }
 
-  // 1. Initial fetch from Supabase PostgreSQL
+  // 1. Initial read directly from `public.memories` (loads all records without artificial 100-item cap)
   const fetchInitialMemories = async () => {
     try {
+      console.log('[SUPABASE] Loading memories');
+      const ascending = options.sortOrder === 'oldest';
+
       let queryBuilder = supabase
         .from(MEMORIES_TABLE)
         .select('*')
-        .order('memory_date', { ascending: options.sortOrder === 'oldest' })
-        .limit(pageSize);
+        .order('memory_date', { ascending })
+        .order('created_at', { ascending });
 
       if (!options.isAdmin) {
-        queryBuilder = queryBuilder.eq('published', true);
+        queryBuilder = queryBuilder.neq('published', false);
       }
       if (options.albumId) {
         queryBuilder = queryBuilder.eq('album_id', options.albumId);
       }
       if (options.type && options.type !== 'all') {
         queryBuilder = queryBuilder.eq('type', options.type);
+      }
+      if (options.pageSize && options.pageSize > 0) {
+        queryBuilder = queryBuilder.limit(options.pageSize);
+      } else {
+        queryBuilder = queryBuilder.limit(10000);
       }
 
       const { data, error } = await withHardTimeout(
@@ -741,42 +597,28 @@ export function listenToMemories(
       if (error) {
         if (isMissingTableOrSchemaError(error)) {
           setSupabaseSchemaMissing(true);
-          console.info(
-            `[SUPABASE] Table public.${MEMORIES_TABLE} not created yet. Run supabase/schema.sql in Supabase SQL Editor.`
-          );
-          await loadFromFallback();
-          return;
         }
-
-        console.warn(
-          `[SUPABASE] Initial query note (${MEMORIES_TABLE}):`,
-          extractSupabaseErrorMessage(error)
-        );
-        await loadFromFallback();
+        logSupabaseDatabaseError(`[SUPABASE] Initial query error (${MEMORIES_TABLE}):`, error);
+        callbacks.onInitialLoad?.([]);
+        callbacks.onError?.(new Error(formatSupabaseErrorMessage(error)));
         return;
       }
 
       setSupabaseSchemaMissing(false);
-      await syncFallbackRecordsToSupabase();
-
       const list: Memory[] = (data || []).map(mapRowToMemory);
-      console.info(
-        `[SUPABASE] Initial load completed (table: ${MEMORIES_TABLE}, count: ${list.length})`
-      );
+      console.log('[SUPABASE] Memories loaded', { count: list.length });
       callbacks.onInitialLoad?.(list);
     } catch (err: any) {
       if (!active) return;
-      console.warn(
-        `[SUPABASE] Initial load fallback (${MEMORIES_TABLE}):`,
-        extractSupabaseErrorMessage(err)
-      );
-      await loadFromFallback();
+      logSupabaseDatabaseError(`[SUPABASE] Initial load failed (${MEMORIES_TABLE}):`, err);
+      callbacks.onInitialLoad?.([]);
+      callbacks.onError?.(err instanceof Error ? err : new Error(formatSupabaseErrorMessage(err)));
     }
   };
 
   fetchInitialMemories();
 
-  // 2. Handle confirmed writes in current client + Supabase Realtime events across devices
+  // 2. Handle confirmed DB writes in current client + Supabase Realtime events across devices
   const handleMemoryEvent: MemoryEventSubscriber = (eventType, memory, deletedId) => {
     if (!active) return;
 
@@ -801,7 +643,7 @@ export function listenToMemories(
 
   memoryEventSubscribers.add(handleMemoryEvent);
 
-  // 3. Subscribe to Supabase Realtime channel for cross-device postgres_changes updates
+  // 3. Subscribe to Supabase Realtime channel for `public.memories` (INSERT, UPDATE, DELETE)
   const channelName = `realtime:memories:${Math.random().toString(36).slice(2, 9)}`;
   const channel = supabase
     .channel(channelName)
@@ -814,29 +656,34 @@ export function listenToMemories(
       },
       (payload) => {
         if (!active) return;
-        console.info(
-          `[SUPABASE] realtime event received (table: ${MEMORIES_TABLE}, event: ${payload.eventType})`
-        );
 
         if (payload.eventType === 'INSERT' && payload.new) {
+          console.log('[SUPABASE] Realtime INSERT received', {
+            table: MEMORIES_TABLE,
+            id: (payload.new as any)?.id,
+          });
           const memory = mapRowToMemory(payload.new as Record<string, any>);
           handleMemoryEvent('INSERT', memory);
         } else if (payload.eventType === 'UPDATE' && payload.new) {
+          console.log('[SUPABASE] Realtime UPDATE received', {
+            table: MEMORIES_TABLE,
+            id: (payload.new as any)?.id,
+          });
           const memory = mapRowToMemory(payload.new as Record<string, any>);
           handleMemoryEvent('UPDATE', memory);
         } else if (payload.eventType === 'DELETE') {
           const oldRow = payload.old as Record<string, any> | undefined;
+          console.log('[SUPABASE] Realtime DELETE received', {
+            table: MEMORIES_TABLE,
+            id: oldRow?.id,
+          });
           if (oldRow?.id) {
             handleMemoryEvent('DELETE', null, String(oldRow.id));
           }
         }
       }
     )
-    .subscribe((status) => {
-      if (status === 'SUBSCRIBED') {
-        console.info(`[SUPABASE] Realtime subscribed (${MEMORIES_TABLE})`);
-      }
-    });
+    .subscribe();
 
   return () => {
     active = false;
@@ -846,7 +693,7 @@ export function listenToMemories(
 }
 
 /**
- * Realtime listener for albums using Supabase PostgreSQL & `postgres_changes`
+ * Realtime listener for `public.albums` using Supabase PostgreSQL & `postgres_changes`
  */
 export function listenToAlbums(
   onAlbumsUpdate: (albums: Album[]) => void,
@@ -854,21 +701,8 @@ export function listenToAlbums(
 ): () => void {
   let active = true;
 
-  ensureRealtimeBroadcastChannel();
-
-  const loadAlbumsFromFallback = async () => {
-    const fallbackState = await loadFallbackDatabaseState();
-    if (!active) return;
-    let albums = Object.values(fallbackState.albums || {}).map(mapRowToAlbum);
-    if (!isAdmin) {
-      albums = albums.filter((a) => a.published !== false);
-    }
-    albums.sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
-    onAlbumsUpdate(albums);
-  };
-
   if (!isSupabaseConfigured) {
-    loadAlbumsFromFallback();
+    onAlbumsUpdate([]);
     return () => {
       active = false;
     };
@@ -896,11 +730,9 @@ export function listenToAlbums(
       if (error) {
         if (isMissingTableOrSchemaError(error)) {
           setSupabaseSchemaMissing(true);
-          await loadAlbumsFromFallback();
-          return;
         }
-        console.warn(`[SUPABASE] Query note (${ALBUMS_TABLE}):`, extractSupabaseErrorMessage(error));
-        await loadAlbumsFromFallback();
+        logSupabaseDatabaseError(`[SUPABASE] Query error (${ALBUMS_TABLE}):`, error);
+        onAlbumsUpdate([]);
         return;
       }
 
@@ -910,8 +742,8 @@ export function listenToAlbums(
       onAlbumsUpdate(albums);
     } catch (err: any) {
       if (!active) return;
-      console.warn(`[SUPABASE] Albums fallback:`, extractSupabaseErrorMessage(err));
-      await loadAlbumsFromFallback();
+      logSupabaseDatabaseError(`[SUPABASE] Failed to load albums:`, err);
+      onAlbumsUpdate([]);
     }
   };
 
@@ -934,9 +766,13 @@ export function listenToAlbums(
       },
       (payload) => {
         if (!active) return;
-        console.info(
-          `[SUPABASE] realtime event received (table: ${ALBUMS_TABLE}, event: ${payload.eventType})`
-        );
+        if (payload.eventType === 'INSERT') {
+          console.log('[SUPABASE] Realtime INSERT received', { table: ALBUMS_TABLE });
+        } else if (payload.eventType === 'UPDATE') {
+          console.log('[SUPABASE] Realtime UPDATE received', { table: ALBUMS_TABLE });
+        } else if (payload.eventType === 'DELETE') {
+          console.log('[SUPABASE] Realtime DELETE received', { table: ALBUMS_TABLE });
+        }
         fetchAlbums();
       }
     )
@@ -950,27 +786,15 @@ export function listenToAlbums(
 }
 
 /**
- * Realtime listener for baby profile settings using Supabase PostgreSQL & `postgres_changes`
+ * Realtime listener for `public.baby_settings` using Supabase PostgreSQL & `postgres_changes`
  */
 export function listenToBabySettings(
   onSettingsUpdate: (settings: BabySettings) => void
 ): () => void {
   let active = true;
 
-  ensureRealtimeBroadcastChannel();
-
-  const loadSettingsFromFallback = async () => {
-    const fallbackState = await loadFallbackDatabaseState();
-    if (!active) return;
-    if (fallbackState.baby_settings) {
-      onSettingsUpdate(mapRowToBabySettings(fallbackState.baby_settings));
-    } else {
-      onSettingsUpdate(DEFAULT_BABY_SETTINGS);
-    }
-  };
-
   if (!isSupabaseConfigured) {
-    loadSettingsFromFallback();
+    onSettingsUpdate(DEFAULT_BABY_SETTINGS);
     return () => {
       active = false;
     };
@@ -989,14 +813,9 @@ export function listenToBabySettings(
       if (error) {
         if (isMissingTableOrSchemaError(error)) {
           setSupabaseSchemaMissing(true);
-          await loadSettingsFromFallback();
-          return;
         }
-        console.warn(
-          `[SUPABASE] Query note (${SETTINGS_TABLE}):`,
-          extractSupabaseErrorMessage(error)
-        );
-        await loadSettingsFromFallback();
+        logSupabaseDatabaseError(`[SUPABASE] Query error (${SETTINGS_TABLE}):`, error);
+        onSettingsUpdate(DEFAULT_BABY_SETTINGS);
         return;
       }
 
@@ -1008,8 +827,8 @@ export function listenToBabySettings(
       }
     } catch (err: any) {
       if (!active) return;
-      console.warn(`[SUPABASE] Baby settings fallback:`, extractSupabaseErrorMessage(err));
-      await loadSettingsFromFallback();
+      logSupabaseDatabaseError(`[SUPABASE] Failed to load baby settings:`, err);
+      onSettingsUpdate(DEFAULT_BABY_SETTINGS);
     }
   };
 
@@ -1034,9 +853,13 @@ export function listenToBabySettings(
       },
       (payload) => {
         if (!active) return;
-        console.info(
-          `[SUPABASE] realtime event received (table: ${SETTINGS_TABLE}, event: ${payload.eventType})`
-        );
+        if (payload.eventType === 'INSERT') {
+          console.log('[SUPABASE] Realtime INSERT received', { table: SETTINGS_TABLE });
+        } else if (payload.eventType === 'UPDATE') {
+          console.log('[SUPABASE] Realtime UPDATE received', { table: SETTINGS_TABLE });
+        } else if (payload.eventType === 'DELETE') {
+          console.log('[SUPABASE] Realtime DELETE received', { table: SETTINGS_TABLE });
+        }
         if (payload.new && Object.keys(payload.new).length > 0) {
           onSettingsUpdate(mapRowToBabySettings(payload.new as Record<string, any>));
         } else {
@@ -1054,13 +877,13 @@ export function listenToBabySettings(
 }
 
 // ============================================================================
-// Authoritative Supabase Write Operations (Idempotent + Timeout + Retry)
+// Authoritative Supabase Write Operations (`public.memories`, `public.albums`, `public.baby_settings`)
 // ============================================================================
 
 /**
- * Save memory to Supabase PostgreSQL (`memories` table).
- * Idempotent via deterministic `memoryId` (`upsert` on primary key `id`).
- * Properly awaits Supabase confirmation with 10s hard timeout & 3 retry attempts.
+ * Inserts/upserts a memory record directly into `public.memories`.
+ * Never marks an upload as completed unless Supabase PostgreSQL confirms the row exists.
+ * Prevents duplicate rows across retries using the deterministic `memoryId`.
  */
 export async function saveMemoryDocument(
   memoryId: string,
@@ -1073,8 +896,13 @@ export async function saveMemoryDocument(
       ? memoryData.memoryDate.toISOString()
       : new Date(memoryData.memoryDate).toISOString()
     : nowIso;
+  const createdAtIso = memoryData.createdAt
+    ? memoryData.createdAt instanceof Date
+      ? memoryData.createdAt.toISOString()
+      : new Date(memoryData.createdAt).toISOString()
+    : nowIso;
 
-  const dbRow = {
+  const insertPayload = {
     id: memoryId,
     type: memoryData.type || 'photo',
     title: memoryData.title || '',
@@ -1088,9 +916,9 @@ export async function saveMemoryDocument(
     file_size: memoryData.fileSize || 0,
     mime_type: memoryData.mimeType || 'image/jpeg',
     memory_date: memoryDateIso,
-    sort_order: memoryData.sortOrder ?? Date.now(),
-    published: memoryData.published ?? true,
-    created_at: nowIso,
+    sort_order: memoryData.sortOrder || 0,
+    published: memoryData.published !== false,
+    created_at: createdAtIso,
     updated_at: nowIso,
   };
 
@@ -1098,18 +926,63 @@ export async function saveMemoryDocument(
     const savedMemory = await executeSupabaseWriteWithRetry(
       memoryId,
       MEMORIES_TABLE,
-      'UPSERT',
-      async () => {
+      'INSERT',
+      async (attempt) => {
+        console.log('[SUPABASE] Database insert started', {
+          id: insertPayload.id,
+          type: insertPayload.type,
+          file_name: insertPayload.file_name,
+          storage_path: insertPayload.storage_path,
+          attempt,
+        });
+
         const { data, error } = await supabase
           .from(MEMORIES_TABLE)
-          .upsert(dbRow, { onConflict: 'id' })
-          .select('*')
+          .insert(insertPayload)
+          .select()
           .single();
 
         if (error) {
+          // If a retry occurs for an ID that was already inserted, upsert on `id` to prevent duplicates
+          if (String(error.code) === '23505') {
+            const { data: upsertData, error: upsertError } = await supabase
+              .from(MEMORIES_TABLE)
+              .upsert(insertPayload, { onConflict: 'id' })
+              .select()
+              .single();
+
+            if (upsertError) {
+              logSupabaseDatabaseError('[SUPABASE] Database insert failed', upsertError);
+              throw upsertError;
+            }
+
+            if (!upsertData) {
+              throw new Error('Supabase did not return the saved memory record.');
+            }
+
+            console.log('[SUPABASE] Database insert completed', {
+              id: upsertData.id,
+              type: upsertData.type,
+              media_url: upsertData.media_url,
+            });
+            return mapRowToMemory(upsertData);
+          }
+
+          logSupabaseDatabaseError('[SUPABASE] Database insert failed', error);
           throw error;
         }
-        return mapRowToMemory(data || dbRow);
+
+        if (!data) {
+          throw new Error('Supabase did not return the inserted memory record.');
+        }
+
+        console.log('[SUPABASE] Database insert completed', {
+          id: data.id,
+          type: data.type,
+          media_url: data.media_url,
+        });
+
+        return mapRowToMemory(data);
       },
       retryOptions
     );
@@ -1120,17 +993,13 @@ export async function saveMemoryDocument(
   } catch (err: any) {
     if (isMissingTableOrSchemaError(err)) {
       setSupabaseSchemaMissing(true);
-      await saveFallbackDatabaseEntry('memories', 'upsert', dbRow, memoryId);
-      const fallbackMemory = mapRowToMemory(dbRow);
-      broadcastConfirmedMemoryChange('INSERT', fallbackMemory);
-      return fallbackMemory;
     }
     throw new Error(formatSupabaseErrorMessage(err));
   }
 }
 
 /**
- * Update memory record in Supabase PostgreSQL (`memories` table)
+ * Update memory record in `public.memories`
  */
 export async function updateMemoryDocument(
   memoryId: string,
@@ -1146,6 +1015,7 @@ export async function updateMemoryDocument(
   if (updates.albumId !== undefined) updateRow.album_id = updates.albumId || null;
   if (updates.published !== undefined) updateRow.published = updates.published;
   if (updates.sortOrder !== undefined) updateRow.sort_order = updates.sortOrder;
+  if (updates.type !== undefined) updateRow.type = updates.type;
   if (updates.memoryDate !== undefined && updates.memoryDate !== null) {
     updateRow.memory_date =
       updates.memoryDate instanceof Date
@@ -1167,6 +1037,7 @@ export async function updateMemoryDocument(
           .single();
 
         if (error) {
+          logSupabaseDatabaseError('[SUPABASE] Memory update failed', error);
           throw error;
         }
         return mapRowToMemory(data);
@@ -1175,45 +1046,101 @@ export async function updateMemoryDocument(
 
     broadcastConfirmedMemoryChange('UPDATE', updatedMemory);
   } catch (err: any) {
-    if (isMissingTableOrSchemaError(err)) {
-      setSupabaseSchemaMissing(true);
-      const state = await loadFallbackDatabaseState();
-      const existing = state.memories[memoryId] || { id: memoryId };
-      const merged = { ...existing, ...updateRow, id: memoryId };
-      await saveFallbackDatabaseEntry('memories', 'upsert', merged, memoryId);
-      broadcastConfirmedMemoryChange('UPDATE', mapRowToMemory(merged));
-      return;
-    }
     throw new Error(formatSupabaseErrorMessage(err));
   }
 }
 
 /**
- * Delete memory record from Supabase PostgreSQL (`memories` table)
+ * Delete memory record from `public.memories`
  */
 export async function deleteMemoryDocument(memoryId: string): Promise<void> {
   try {
     await executeSupabaseWriteWithRetry(memoryId, MEMORIES_TABLE, 'DELETE', async () => {
       const { error } = await supabase.from(MEMORIES_TABLE).delete().eq('id', memoryId);
       if (error) {
+        logSupabaseDatabaseError('[SUPABASE] Memory delete failed', error);
         throw error;
       }
     });
 
     broadcastConfirmedMemoryChange('DELETE', null, memoryId);
   } catch (err: any) {
-    if (isMissingTableOrSchemaError(err)) {
-      setSupabaseSchemaMissing(true);
-      await saveFallbackDatabaseEntry('memories', 'delete', undefined, memoryId);
-      broadcastConfirmedMemoryChange('DELETE', null, memoryId);
-      return;
-    }
     throw new Error(formatSupabaseErrorMessage(err));
   }
 }
 
 /**
- * Save / Create Album in Supabase PostgreSQL (`albums` table)
+ * Delete ALL memory records from `public.memories` and return their IDs and storage paths
+ * so associated files in Supabase Storage bucket `media` can also be cleaned up.
+ */
+export async function deleteAllMemoriesDocuments(): Promise<{
+  deletedCount: number;
+  deletedIds: string[];
+  storagePaths: string[];
+}> {
+  assertSupabaseConfigured();
+
+  try {
+    const { data: existingRows, error: fetchErr } = await withHardTimeout(
+      supabase.from(MEMORIES_TABLE).select('id, storage_path').limit(10000),
+      SUPABASE_WRITE_TIMEOUT_MS,
+      `SELECT all IDs from ${MEMORIES_TABLE}`
+    );
+
+    if (fetchErr) {
+      logSupabaseDatabaseError('[SUPABASE] Fetch before delete all memories failed', fetchErr);
+      throw fetchErr;
+    }
+
+    const rows = existingRows || [];
+    const deletedIds = rows.map((r: any) => String(r.id)).filter(Boolean);
+    const storagePaths = rows
+      .map((r: any) => (r.storage_path ? String(r.storage_path) : ''))
+      .filter(Boolean);
+
+    if (deletedIds.length === 0) {
+      notifyStatisticsRefresh();
+      return { deletedCount: 0, deletedIds: [], storagePaths: [] };
+    }
+
+    await executeSupabaseWriteWithRetry(
+      'all_memories',
+      MEMORIES_TABLE,
+      'DELETE_ALL',
+      async () => {
+        const { error } = await supabase.from(MEMORIES_TABLE).delete().neq('id', '');
+        if (error) {
+          logSupabaseDatabaseError('[SUPABASE] Delete all memories failed', error);
+          throw error;
+        }
+      }
+    );
+
+    console.log('[SUPABASE] All memories deleted from database', {
+      deletedCount: deletedIds.length,
+    });
+
+    for (const id of deletedIds) {
+      memoryEventSubscribers.forEach((cb) => {
+        try {
+          cb('DELETE', null, id);
+        } catch {}
+      });
+    }
+    notifyStatisticsRefresh();
+
+    return {
+      deletedCount: deletedIds.length,
+      deletedIds,
+      storagePaths,
+    };
+  } catch (err: any) {
+    throw new Error(formatSupabaseErrorMessage(err));
+  }
+}
+
+/**
+ * Save / Create Album in `public.albums`
  */
 export async function saveAlbumDocument(
   albumId: string,
@@ -1235,24 +1162,19 @@ export async function saveAlbumDocument(
     await executeSupabaseWriteWithRetry(albumId, ALBUMS_TABLE, 'UPSERT', async () => {
       const { error } = await supabase.from(ALBUMS_TABLE).upsert(dbRow, { onConflict: 'id' });
       if (error) {
+        logSupabaseDatabaseError('[SUPABASE] Album upsert failed', error);
         throw error;
       }
     });
 
     broadcastConfirmedAlbumChange();
   } catch (err: any) {
-    if (isMissingTableOrSchemaError(err)) {
-      setSupabaseSchemaMissing(true);
-      await saveFallbackDatabaseEntry('albums', 'upsert', dbRow, albumId);
-      broadcastConfirmedAlbumChange();
-      return;
-    }
     throw new Error(formatSupabaseErrorMessage(err));
   }
 }
 
 /**
- * Update Album in Supabase PostgreSQL (`albums` table)
+ * Update Album in `public.albums`
  */
 export async function updateAlbumDocument(
   albumId: string,
@@ -1272,27 +1194,19 @@ export async function updateAlbumDocument(
     await executeSupabaseWriteWithRetry(albumId, ALBUMS_TABLE, 'UPDATE', async () => {
       const { error } = await supabase.from(ALBUMS_TABLE).update(updateRow).eq('id', albumId);
       if (error) {
+        logSupabaseDatabaseError('[SUPABASE] Album update failed', error);
         throw error;
       }
     });
 
     broadcastConfirmedAlbumChange();
   } catch (err: any) {
-    if (isMissingTableOrSchemaError(err)) {
-      setSupabaseSchemaMissing(true);
-      const state = await loadFallbackDatabaseState();
-      const existing = state.albums[albumId] || { id: albumId };
-      const merged = { ...existing, ...updateRow, id: albumId };
-      await saveFallbackDatabaseEntry('albums', 'upsert', merged, albumId);
-      broadcastConfirmedAlbumChange();
-      return;
-    }
     throw new Error(formatSupabaseErrorMessage(err));
   }
 }
 
 /**
- * Delete Album from Supabase PostgreSQL (`albums` table)
+ * Delete Album from `public.albums`
  */
 export async function deleteAlbumDocument(albumId: string): Promise<void> {
   try {
@@ -1301,24 +1215,19 @@ export async function deleteAlbumDocument(albumId: string): Promise<void> {
 
       const { error } = await supabase.from(ALBUMS_TABLE).delete().eq('id', albumId);
       if (error) {
+        logSupabaseDatabaseError('[SUPABASE] Album delete failed', error);
         throw error;
       }
     });
 
     broadcastConfirmedAlbumChange();
   } catch (err: any) {
-    if (isMissingTableOrSchemaError(err)) {
-      setSupabaseSchemaMissing(true);
-      await saveFallbackDatabaseEntry('albums', 'delete', undefined, albumId);
-      broadcastConfirmedAlbumChange();
-      return;
-    }
     throw new Error(formatSupabaseErrorMessage(err));
   }
 }
 
 /**
- * Save Baby Profile Settings in Supabase PostgreSQL (`baby_settings` table)
+ * Save Baby Profile Settings in `public.baby_settings`
  */
 export async function saveBabySettings(settings: Partial<BabySettings>): Promise<void> {
   const nowIso = new Date().toISOString();
@@ -1345,6 +1254,7 @@ export async function saveBabySettings(settings: Partial<BabySettings>): Promise
           .single();
 
         if (error) {
+          logSupabaseDatabaseError('[SUPABASE] Baby settings upsert failed', error);
           throw error;
         }
         return mapRowToBabySettings(data || dbRow);
@@ -1353,12 +1263,6 @@ export async function saveBabySettings(settings: Partial<BabySettings>): Promise
 
     broadcastConfirmedSettingsChange(savedSettings);
   } catch (err: any) {
-    if (isMissingTableOrSchemaError(err)) {
-      setSupabaseSchemaMissing(true);
-      await saveFallbackDatabaseEntry('baby_settings', 'upsert', dbRow, BABY_PROFILE_ID);
-      broadcastConfirmedSettingsChange(mapRowToBabySettings(dbRow));
-      return;
-    }
     throw new Error(formatSupabaseErrorMessage(err));
   }
 }

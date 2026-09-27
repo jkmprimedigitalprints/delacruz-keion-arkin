@@ -68,6 +68,13 @@ export interface UploadItem {
   previewUrl: string;
   storagePath?: string;
   recordId?: string;
+  uploadedMedia?: {
+    mediaUrl: string;
+    storagePath: string;
+    thumbnailUrl: string | null;
+    posterUrl: string | null;
+    mimeType: string;
+  };
   title?: string;
   caption?: string;
   albumId?: string;

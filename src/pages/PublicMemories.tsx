@@ -3,6 +3,8 @@ import {
   listenToMemories,
   listenToAlbums,
   listenToBabySettings,
+  listenToMemoryStatistics,
+  MemoryStatistics,
 } from '../supabase/database';
 import { Memory, Album, BabySettings } from '../types';
 import { Hero } from '../components/Hero';
@@ -33,6 +35,7 @@ export const PublicMemories: React.FC<PublicMemoriesProps> = ({
   // In-memory Map: memoryId -> memory object for high-performance granular realtime updates
   const [memoriesMap, setMemoriesMap] = useState<Map<string, Memory>>(new Map());
   const [albums, setAlbums] = useState<Album[]>([]);
+  const [stats, setStats] = useState<MemoryStatistics | null>(null);
   const [settings, setSettings] = useState<BabySettings>({
     babyName: 'KEION ARKIN DE LA CRUZ',
     birthDate: '2025-10-12',
@@ -68,18 +71,28 @@ export const PublicMemories: React.FC<PublicMemoriesProps> = ({
     return unsub;
   }, []);
 
-  // Realtime subscription to Memories using onSnapshot & docChanges()
+  // Realtime subscription to authoritative database statistics
+  useEffect(() => {
+    const unsubStats = listenToMemoryStatistics(
+      (liveStats) => {
+        setStats(liveStats);
+      },
+      undefined,
+      false
+    );
+    return unsubStats;
+  }, []);
+
+  // Realtime subscription to Memories from public.memories
   useEffect(() => {
     setIsLoading(true);
 
     const unsubscribe = listenToMemories(
       {
         onInitialLoad: (initialMemories) => {
-          setMemoriesMap((prev) => {
-            const nextMap = new Map(prev);
-            initialMemories.forEach((m) => nextMap.set(m.id, m));
-            return nextMap;
-          });
+          const nextMap = new Map<string, Memory>();
+          initialMemories.forEach((m) => nextMap.set(m.id, m));
+          setMemoriesMap(nextMap);
           setIsLoading(false);
         },
         onAdded: (memory) => {
@@ -109,7 +122,6 @@ export const PublicMemories: React.FC<PublicMemoriesProps> = ({
       },
       {
         isAdmin: false,
-        pageSize: 150,
       }
     );
 
@@ -121,15 +133,15 @@ export const PublicMemories: React.FC<PublicMemoriesProps> = ({
     return Array.from(memoriesMap.values());
   }, [memoriesMap]);
 
-  // Overall counts for filter tabs & Hero stats (always stable regardless of active filter)
-  const totalMemories = allMemories.length;
+  // Overall counts for filter tabs & Hero stats (authoritative from public.memories)
+  const totalMemories = stats ? stats.totalMemories : allMemories.length;
   const totalPhotos = useMemo(
-    () => allMemories.filter((m) => m.type === 'photo').length,
-    [allMemories]
+    () => (stats ? stats.totalPhotos : allMemories.filter((m) => m.type === 'photo').length),
+    [stats, allMemories]
   );
   const totalVideos = useMemo(
-    () => allMemories.filter((m) => m.type === 'video').length,
-    [allMemories]
+    () => (stats ? stats.totalVideos : allMemories.filter((m) => m.type === 'video').length),
+    [stats, allMemories]
   );
 
   // Filtered & sorted memories for the gallery view
