@@ -196,16 +196,16 @@ export const AdminUpload: React.FC<AdminUploadProps> = ({ navigate }) => {
       <div className="flex items-center gap-3 mb-6">
         <button
           onClick={() => navigate('/familyadmin/dashboard')}
-          className="p-2 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-white border border-slate-200 transition"
+          className="p-2 rounded-xl btn-night-secondary cursor-pointer"
           aria-label="Back to dashboard"
         >
           <ArrowLeft className="w-4 h-4" />
         </button>
         <div>
-          <h1 className="font-serif text-2xl sm:text-3xl font-bold text-slate-900">
+          <h1 className="font-serif text-2xl sm:text-3xl font-semibold text-[var(--text-primary)]">
             Upload Baby Memories
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+          <p className="text-xs sm:text-sm text-[var(--text-secondary)] mt-0.5">
             Add multiple photos and videos with fast background cloud synchronization.
           </p>
         </div>
@@ -221,18 +221,18 @@ export const AdminUpload: React.FC<AdminUploadProps> = ({ navigate }) => {
         onDrop={handleDrop}
         className={`border-2 border-dashed rounded-3xl p-8 sm:p-12 text-center transition-all duration-200 ${
           isDragging
-            ? 'border-sky-500 bg-sky-50/80 scale-[1.01]'
-            : 'border-slate-200 bg-white hover:border-sky-300 hover:bg-sky-50/30'
+            ? 'border-[#A9D6F5] bg-[#102642]/90 scale-[1.01]'
+            : 'border-[var(--border-subtle)] night-card hover:border-[#6FA8DC]/45'
         }`}
       >
-        <div className="w-16 h-16 rounded-2xl bg-sky-100 text-sky-600 flex items-center justify-center mx-auto mb-4 shadow-xs">
+        <div className="w-16 h-16 rounded-2xl bg-[#0B1D35] [.light_&]:bg-sky-50 border border-[var(--border-subtle)] text-[#A9D6F5] [.light_&]:text-sky-600 flex items-center justify-center mx-auto mb-4 shadow-xs">
           <UploadCloud className="w-8 h-8" />
         </div>
 
-        <h3 className="text-lg font-semibold text-slate-800 mb-1">
+        <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-1">
           Drag & drop photos and videos here
         </h3>
-        <p className="text-xs text-slate-500 max-w-sm mx-auto mb-6">
+        <p className="text-xs text-[var(--text-secondary)] max-w-sm mx-auto mb-6">
           High-resolution photos (JPG, PNG, WebP, HEIC) and videos (MP4, MOV, WebM).
         </p>
 
@@ -249,7 +249,7 @@ export const AdminUpload: React.FC<AdminUploadProps> = ({ navigate }) => {
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="px-5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-semibold text-xs sm:text-sm shadow-md shadow-sky-200 flex items-center gap-2 transition"
+            className="px-5 py-2.5 rounded-xl btn-night-primary text-xs sm:text-sm flex items-center gap-2 cursor-pointer"
           >
             <ImageIcon className="w-4 h-4" />
             <span>Select Photos & Videos</span>
@@ -267,35 +267,41 @@ export const AdminUpload: React.FC<AdminUploadProps> = ({ navigate }) => {
           <button
             type="button"
             onClick={() => cameraInputRef.current?.click()}
-            className="px-4 py-2.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-medium text-xs sm:text-sm flex items-center gap-2 transition"
+            className="px-4 py-2.5 rounded-xl btn-night-secondary font-medium text-xs sm:text-sm flex items-center gap-2 cursor-pointer"
           >
-            <Camera className="w-4 h-4 text-sky-600" />
+            <Camera className="w-4 h-4 text-[#6FA8DC]" />
             <span>Take Photo</span>
           </button>
         </div>
       </div>
 
       {/* Shared Batch Metadata Section */}
-      <div className="mt-8 bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-xs">
-        <h3 className="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
-          <FolderHeart className="w-4 h-4 text-sky-600" />
+      <div className="mt-8 night-card rounded-2xl p-5 sm:p-6">
+        <h3 className="text-sm font-bold text-[var(--text-primary)] mb-3 flex items-center gap-2">
+          <FolderHeart className="w-4 h-4 text-[#6FA8DC]" />
           <span>Batch Details (Applied to selected files)</span>
         </h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* Target Album */}
           <div>
-            <label className="block text-xs font-semibold text-slate-600 mb-1.5">
+            <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1.5">
               Assign to Album
             </label>
             <select
               value={sharedAlbumId}
               onChange={(e) => setSharedAlbumId(e.target.value)}
-              className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-sky-200 transition"
+              className="w-full px-3.5 py-2.5 bg-[#0B1D35] [.light_&]:bg-slate-50 border border-[var(--border-subtle)] rounded-xl text-xs sm:text-sm text-[var(--text-primary)] focus:outline-hidden focus:ring-2 focus:ring-[#6FA8DC]/40 transition"
             >
-              <option value="">None (Unorganized)</option>
+              <option value="" className="bg-[#0B1D35] text-[#F0F7FF] [.light_&]:bg-white [.light_&]:text-slate-800">
+                None (Unorganized)
+              </option>
               {albums.map((album) => (
-                <option key={album.id} value={album.id}>
+                <option
+                  key={album.id}
+                  value={album.id}
+                  className="bg-[#0B1D35] text-[#F0F7FF] [.light_&]:bg-white [.light_&]:text-slate-800"
+                >
                   {album.name}
                 </option>
               ))}
@@ -304,20 +310,20 @@ export const AdminUpload: React.FC<AdminUploadProps> = ({ navigate }) => {
 
           {/* Memory Date */}
           <div>
-            <label className="block text-xs font-semibold text-slate-600 mb-1.5">
+            <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1.5">
               Memory Date
             </label>
             <input
               type="date"
               value={sharedMemoryDate}
               onChange={(e) => setSharedMemoryDate(e.target.value)}
-              className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-sky-200 transition"
+              className="w-full px-3.5 py-2.5 bg-[#0B1D35] [.light_&]:bg-slate-50 border border-[var(--border-subtle)] rounded-xl text-xs sm:text-sm text-[var(--text-primary)] focus:outline-hidden focus:ring-2 focus:ring-[#6FA8DC]/40 transition"
             />
           </div>
 
           {/* Shared Caption */}
           <div className="sm:col-span-2">
-            <label className="block text-xs font-semibold text-slate-600 mb-1.5">
+            <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1.5">
               Shared Caption / Story
             </label>
             <textarea
@@ -325,7 +331,7 @@ export const AdminUpload: React.FC<AdminUploadProps> = ({ navigate }) => {
               value={sharedCaption}
               onChange={(e) => setSharedCaption(e.target.value)}
               placeholder="e.g. Grandma's first visit, crawling in the living room..."
-              className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-sky-200 transition"
+              className="w-full px-3.5 py-2 bg-[#0B1D35] [.light_&]:bg-slate-50 border border-[var(--border-subtle)] rounded-xl text-xs sm:text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-hidden focus:ring-2 focus:ring-[#6FA8DC]/40 transition"
             />
           </div>
         </div>
@@ -335,7 +341,7 @@ export const AdminUpload: React.FC<AdminUploadProps> = ({ navigate }) => {
       {stagedFiles.length > 0 && (
         <div className="mt-8">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-bold text-slate-800">
+            <h3 className="text-sm font-bold text-[var(--text-primary)]">
               Selected Files ({stagedFiles.length})
             </h3>
             <button
@@ -343,7 +349,7 @@ export const AdminUpload: React.FC<AdminUploadProps> = ({ navigate }) => {
                 stagedFiles.forEach((f) => URL.revokeObjectURL(f.previewUrl));
                 setStagedFiles([]);
               }}
-              className="text-xs text-rose-600 hover:text-rose-800 font-medium"
+              className="text-xs text-rose-400 hover:text-rose-300 font-medium cursor-pointer"
             >
               Clear All
             </button>
@@ -353,9 +359,9 @@ export const AdminUpload: React.FC<AdminUploadProps> = ({ navigate }) => {
             {stagedFiles.map((staged) => (
               <div
                 key={staged.id}
-                className="bg-white rounded-2xl border border-slate-200/80 p-3 shadow-2xs flex flex-col justify-between"
+                className="night-card rounded-2xl p-3 flex flex-col justify-between"
               >
-                <div className="relative aspect-4/3 rounded-xl overflow-hidden bg-slate-900 mb-3">
+                <div className="relative aspect-4/3 rounded-xl overflow-hidden bg-[#0B1D35] mb-3">
                   {staged.type === 'photo' ? (
                     <img
                       src={staged.previewUrl}
@@ -363,7 +369,7 @@ export const AdminUpload: React.FC<AdminUploadProps> = ({ navigate }) => {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full relative flex flex-col items-center justify-center bg-slate-900 text-sky-400">
+                    <div className="w-full h-full relative flex flex-col items-center justify-center bg-[#0B1D35] text-[#6FA8DC]">
                       <video
                         src={staged.previewUrl}
                         preload="metadata"
@@ -371,12 +377,12 @@ export const AdminUpload: React.FC<AdminUploadProps> = ({ navigate }) => {
                         playsInline
                         className="w-full h-full object-cover"
                       />
-                      <div className="absolute inset-0 bg-black/25 flex items-center justify-center pointer-events-none">
-                        <div className="w-9 h-9 rounded-full bg-white/90 text-sky-600 flex items-center justify-center shadow-sm">
-                          <Film className="w-4 h-4 fill-sky-600" />
+                      <div className="absolute inset-0 bg-[#071426]/30 flex items-center justify-center pointer-events-none">
+                        <div className="w-9 h-9 rounded-full bg-[#102642]/90 border border-[#A9D6F5]/30 text-[#D9ECFF] flex items-center justify-center shadow-sm">
+                          <Film className="w-4 h-4" />
                         </div>
                       </div>
-                      <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-black/60 text-white text-[10px] font-semibold">
+                      <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-[#071426]/75 text-[#D9ECFF] text-[10px] font-semibold">
                         VIDEO
                       </span>
                     </div>
@@ -384,7 +390,7 @@ export const AdminUpload: React.FC<AdminUploadProps> = ({ navigate }) => {
 
                   <button
                     onClick={() => removeStagedFile(staged.id)}
-                    className="absolute top-2 right-2 p-1.5 rounded-full bg-slate-900/60 hover:bg-rose-600 text-white transition"
+                    className="absolute top-2 right-2 p-1.5 rounded-full bg-[#071426]/70 hover:bg-rose-600 text-white transition cursor-pointer"
                     title="Remove file"
                   >
                     <X className="w-3.5 h-3.5" />
@@ -397,14 +403,14 @@ export const AdminUpload: React.FC<AdminUploadProps> = ({ navigate }) => {
                     value={staged.title}
                     onChange={(e) => updateStagedItem(staged.id, { title: e.target.value })}
                     placeholder="Title"
-                    className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-slate-800 focus:bg-white"
+                    className="w-full px-2.5 py-1.5 bg-[#0B1D35] [.light_&]:bg-slate-50 border border-[var(--border-subtle)] rounded-lg text-xs font-medium text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
                   />
                   <input
                     type="text"
                     value={staged.caption}
                     onChange={(e) => updateStagedItem(staged.id, { caption: e.target.value })}
                     placeholder="Caption (optional)"
-                    className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-600 focus:bg-white"
+                    className="w-full px-2.5 py-1.5 bg-[#0B1D35] [.light_&]:bg-slate-50 border border-[var(--border-subtle)] rounded-lg text-xs text-[var(--text-secondary)] placeholder:text-[var(--text-muted)]"
                   />
                 </div>
               </div>
@@ -417,7 +423,7 @@ export const AdminUpload: React.FC<AdminUploadProps> = ({ navigate }) => {
               type="button"
               disabled={isSubmitting}
               onClick={handleStartUpload}
-              className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-sky-600 hover:bg-sky-700 disabled:bg-sky-400 text-white font-semibold text-sm shadow-lg shadow-sky-200 flex items-center justify-center gap-2 transition"
+              className="w-full sm:w-auto px-8 py-3.5 rounded-xl btn-night-primary disabled:opacity-60 text-sm flex items-center justify-center gap-2 cursor-pointer"
             >
               <UploadCloud className="w-5 h-5" />
               <span>

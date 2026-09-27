@@ -1,5 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Sparkles, Shield, LogOut, Menu, X, Wifi, WifiOff, FolderHeart, Image as ImageIcon } from 'lucide-react';
+import {
+  Shield,
+  LogOut,
+  Menu,
+  X,
+  WifiOff,
+  FolderHeart,
+  Image as ImageIcon,
+  Moon,
+  Sun,
+} from 'lucide-react';
 import { AdminAuthState } from '../types';
 import { logoutAdmin } from '../supabase/auth';
 
@@ -12,6 +22,27 @@ interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({ currentPath, navigate, authState }) => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    try {
+      const saved = window.localStorage.getItem('keion_theme');
+      if (saved === 'light' || saved === 'dark') return saved;
+    } catch {}
+    return 'dark';
+  });
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === 'light') {
+      root.classList.add('light');
+      root.classList.remove('dark');
+    } else {
+      root.classList.add('dark');
+      root.classList.remove('light');
+    }
+    try {
+      window.localStorage.setItem('keion_theme', theme);
+    } catch {}
+  }, [theme]);
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -36,90 +67,105 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, navigate, authState
     navigate('/memories');
   };
 
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
+  };
+
   const isAdminRoute = currentPath.startsWith('/familyadmin');
 
   return (
-    <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-sky-100/80 transition-all">
+    <header className="sticky top-0 z-40 bg-[#0B1D35]/88 [.light_&]:bg-white/88 backdrop-blur-md border-b border-[var(--border-subtle)] transition-colors duration-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Brand */}
         <button
           onClick={() => handleNavClick('/memories')}
-          className="flex items-center gap-2.5 text-left group focus:outline-hidden"
+          className="flex items-center gap-3 text-left group focus:outline-hidden cursor-pointer"
         >
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-sky-400 to-blue-500 text-white flex items-center justify-center shadow-md shadow-sky-200/50 group-hover:scale-105 transition">
-            <Sparkles className="w-5 h-5 text-sky-100" />
+          <div className="w-10 h-10 rounded-2xl bg-[#102642] [.light_&]:bg-[#E6F1FB] border border-[#6FA8DC]/30 text-[#D9ECFF] [.light_&]:text-[#2563EB] flex items-center justify-center shadow-[0_4px_16px_rgba(111,168,220,0.2)] group-hover:border-[#A9D6F5]/60 transition">
+            <span className="text-lg leading-none select-none">☾</span>
           </div>
           <div>
-            <span className="font-serif text-lg font-bold tracking-tight text-slate-800 flex items-center gap-1.5">
+            <span className="font-serif text-lg font-semibold tracking-tight text-[var(--text-primary)] flex items-center gap-1.5">
               Little Keion
-              <span className="w-1.5 h-1.5 rounded-full bg-sky-400 inline-block"></span>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#A9D6F5] inline-block" />
             </span>
-            <p className="text-[11px] font-medium tracking-wide uppercase text-sky-600/90 -mt-0.5">
+            <p className="text-[11px] font-medium tracking-wide text-[#6FA8DC] -mt-0.5">
               Keion Arkin De La Cruz
             </p>
           </div>
         </button>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-1">
+        <nav className="hidden md:flex items-center gap-2">
           <button
             onClick={() => handleNavClick('/memories')}
-            className={`px-4 py-2 rounded-xl text-sm font-medium transition flex items-center gap-2 ${
+            className={`px-4 py-2 rounded-xl text-sm font-medium transition flex items-center gap-2 cursor-pointer ${
               currentPath === '/memories' || currentPath === '/'
-                ? 'bg-sky-50 text-sky-700 font-semibold shadow-xs'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                ? 'bg-[#102642] [.light_&]:bg-[#E6F1FB] text-[#D9ECFF] [.light_&]:text-[#1E3A5F] border border-[#6FA8DC]/30 shadow-2xs'
+                : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[#102642]/50 [.light_&]:hover:bg-slate-100'
             }`}
           >
-            <ImageIcon className="w-4 h-4 text-sky-500" />
-            Memories
+            <ImageIcon className="w-4 h-4 text-[#6FA8DC]" />
+            <span>Memories</span>
           </button>
 
           <button
             onClick={() => handleNavClick('/albums')}
-            className={`px-4 py-2 rounded-xl text-sm font-medium transition flex items-center gap-2 ${
+            className={`px-4 py-2 rounded-xl text-sm font-medium transition flex items-center gap-2 cursor-pointer ${
               currentPath === '/albums'
-                ? 'bg-sky-50 text-sky-700 font-semibold shadow-xs'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                ? 'bg-[#102642] [.light_&]:bg-[#E6F1FB] text-[#D9ECFF] [.light_&]:text-[#1E3A5F] border border-[#6FA8DC]/30 shadow-2xs'
+                : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[#102642]/50 [.light_&]:hover:bg-slate-100'
             }`}
           >
-            <FolderHeart className="w-4 h-4 text-sky-500" />
-            Albums
+            <FolderHeart className="w-4 h-4 text-[#6FA8DC]" />
+            <span>Albums</span>
           </button>
         </nav>
 
-        {/* Right side: Realtime Sync Pill + Admin */}
-        <div className="flex items-center gap-2.5">
-          {/* Sync status pill */}
+        {/* Right side: Connectivity + Theme Toggle + Admin */}
+        <div className="flex items-center gap-2 sm:gap-2.5">
+          {/* Quiet connectivity status */}
           <div
-            className={`hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border transition ${
-              isOnline
-                ? 'bg-emerald-50/80 border-emerald-200 text-emerald-700'
-                : 'bg-amber-50/80 border-amber-200 text-amber-700'
+            className={`hidden sm:flex items-center gap-1.5 text-xs font-medium ${
+              isOnline ? 'text-[#A9D6F5]/85 [.light_&]:text-emerald-700' : 'text-amber-400'
             }`}
             title={isOnline ? 'Realtime Supabase sync active' : 'Offline - cached data available'}
           >
             {isOnline ? (
               <>
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 <span>Live Sync</span>
               </>
             ) : (
               <>
-                <WifiOff className="w-3 h-3 text-amber-600" />
+                <WifiOff className="w-3.5 h-3.5 text-amber-400" />
                 <span>Offline</span>
               </>
             )}
           </div>
+
+          {/* Theme Toggle (Night Sky vs Light Mode) */}
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="w-9 h-9 rounded-xl btn-night-secondary flex items-center justify-center cursor-pointer"
+            title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Night Sky Mode'}
+            aria-label={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Night Sky Mode'}
+          >
+            {theme === 'dark' ? (
+              <Moon className="w-4 h-4 text-[#D9ECFF]" />
+            ) : (
+              <Sun className="w-4 h-4 text-amber-500" />
+            )}
+          </button>
 
           {/* Admin link / status */}
           {authState.isAuthenticated ? (
             <div className="flex items-center gap-1.5">
               <button
                 onClick={() => handleNavClick('/familyadmin/dashboard')}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 border shadow-xs transition ${
-                  isAdminRoute
-                    ? 'bg-sky-600 border-sky-600 text-white'
-                    : 'bg-white border-sky-200 text-sky-700 hover:bg-sky-50'
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer ${
+                  isAdminRoute ? 'btn-night-primary' : 'btn-night-secondary'
                 }`}
               >
                 <Shield className="w-3.5 h-3.5" />
@@ -127,7 +173,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, navigate, authState
               </button>
               <button
                 onClick={handleLogout}
-                className="p-1.5 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
+                className="p-2 rounded-xl text-[var(--text-muted)] hover:text-rose-400 hover:bg-rose-500/10 transition cursor-pointer"
                 title="Log out from Admin"
                 aria-label="Log out"
               >
@@ -137,13 +183,11 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, navigate, authState
           ) : (
             <button
               onClick={() => handleNavClick('/familyadmin')}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 border transition ${
-                currentPath === '/familyadmin'
-                  ? 'bg-sky-600 text-white border-sky-600'
-                  : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-white hover:border-sky-300'
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer ${
+                currentPath === '/familyadmin' ? 'btn-night-primary' : 'btn-night-secondary'
               }`}
             >
-              <Shield className="w-3.5 h-3.5 text-sky-600" />
+              <Shield className="w-3.5 h-3.5 text-[#6FA8DC]" />
               <span>Family Admin</span>
             </button>
           )}
@@ -151,7 +195,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, navigate, authState
           {/* Mobile menu toggle */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="md:hidden p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition"
+            className="md:hidden p-2 rounded-xl text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[#102642]/60 transition"
             aria-label="Toggle navigation menu"
           >
             {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -161,83 +205,73 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, navigate, authState
 
       {/* Mobile Drawer */}
       {isMobileMenuOpen && (
-        <div className="md:hidden border-t border-slate-100 bg-white/95 px-4 pt-3 pb-5 flex flex-col gap-2 shadow-xl animate-fade-in">
+        <div className="md:hidden border-t border-[var(--border-subtle)] bg-[#0B1D35]/98 [.light_&]:bg-white/98 px-4 pt-3 pb-5 flex flex-col gap-2 shadow-xl animate-fade-in">
           <button
             onClick={() => handleNavClick('/memories')}
             className={`w-full px-4 py-2.5 rounded-xl text-left text-sm font-medium flex items-center gap-2.5 transition ${
               currentPath === '/memories' || currentPath === '/'
-                ? 'bg-sky-50 text-sky-800 font-semibold'
-                : 'text-slate-700 hover:bg-slate-50'
+                ? 'bg-[#102642] [.light_&]:bg-[#E6F1FB] text-[#D9ECFF] [.light_&]:text-[#1E3A5F] font-semibold border border-[#6FA8DC]/25'
+                : 'text-[var(--text-secondary)] hover:bg-[#102642]/50'
             }`}
           >
-            <ImageIcon className="w-4 h-4 text-sky-500" />
-            Memories Gallery
+            <ImageIcon className="w-4 h-4 text-[#6FA8DC]" />
+            <span>Memories Gallery</span>
           </button>
           <button
             onClick={() => handleNavClick('/albums')}
             className={`w-full px-4 py-2.5 rounded-xl text-left text-sm font-medium flex items-center gap-2.5 transition ${
               currentPath === '/albums'
-                ? 'bg-sky-50 text-sky-800 font-semibold'
-                : 'text-slate-700 hover:bg-slate-50'
+                ? 'bg-[#102642] [.light_&]:bg-[#E6F1FB] text-[#D9ECFF] [.light_&]:text-[#1E3A5F] font-semibold border border-[#6FA8DC]/25'
+                : 'text-[var(--text-secondary)] hover:bg-[#102642]/50'
             }`}
           >
-            <FolderHeart className="w-4 h-4 text-sky-500" />
-            Photo Albums
+            <FolderHeart className="w-4 h-4 text-[#6FA8DC]" />
+            <span>Photo Albums</span>
           </button>
 
           {authState.isAuthenticated && (
-            <div className="pt-2 border-t border-slate-100 flex flex-col gap-1.5">
-              <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider px-2">
+            <div className="pt-2 border-t border-[var(--border-subtle)] flex flex-col gap-1.5">
+              <p className="text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wider px-2">
                 Admin Panel
               </p>
               <button
                 onClick={() => handleNavClick('/familyadmin/dashboard')}
-                className="w-full px-4 py-2 rounded-xl text-left text-sm text-slate-700 hover:bg-sky-50 transition"
+                className="w-full px-4 py-2 rounded-xl text-left text-sm text-[var(--text-secondary)] hover:bg-[#102642]/60 transition"
               >
                 Dashboard
               </button>
               <button
                 onClick={() => handleNavClick('/familyadmin/upload')}
-                className="w-full px-4 py-2 rounded-xl text-left text-sm text-slate-700 hover:bg-sky-50 transition"
+                className="w-full px-4 py-2 rounded-xl text-left text-sm text-[var(--text-secondary)] hover:bg-[#102642]/60 transition"
               >
-                Add Photos & Videos
+                Upload Photos & Videos
               </button>
               <button
                 onClick={() => handleNavClick('/familyadmin/memories')}
-                className="w-full px-4 py-2 rounded-xl text-left text-sm text-slate-700 hover:bg-sky-50 transition"
+                className="w-full px-4 py-2 rounded-xl text-left text-sm text-[var(--text-secondary)] hover:bg-[#102642]/60 transition"
               >
                 Manage Memories
               </button>
               <button
                 onClick={() => handleNavClick('/familyadmin/albums')}
-                className="w-full px-4 py-2 rounded-xl text-left text-sm text-slate-700 hover:bg-sky-50 transition"
+                className="w-full px-4 py-2 rounded-xl text-left text-sm text-[var(--text-secondary)] hover:bg-[#102642]/60 transition"
               >
                 Manage Albums
               </button>
               <button
                 onClick={() => handleNavClick('/familyadmin/settings')}
-                className="w-full px-4 py-2 rounded-xl text-left text-sm text-slate-700 hover:bg-sky-50 transition"
+                className="w-full px-4 py-2 rounded-xl text-left text-sm text-[var(--text-secondary)] hover:bg-[#102642]/60 transition"
               >
                 Baby Profile Settings
               </button>
+              <button
+                onClick={handleLogout}
+                className="w-full px-4 py-2 rounded-xl text-left text-sm text-rose-400 hover:bg-rose-500/10 font-medium transition"
+              >
+                Sign Out
+              </button>
             </div>
           )}
-
-          <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500 px-2">
-            <span className="flex items-center gap-1.5">
-              {isOnline ? (
-                <>
-                  <Wifi className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>Realtime Connected</span>
-                </>
-              ) : (
-                <>
-                  <WifiOff className="w-3.5 h-3.5 text-amber-600" />
-                  <span>Offline Mode</span>
-                </>
-              )}
-            </span>
-          </div>
         </div>
       )}
     </header>

@@ -65,7 +65,7 @@ const MemoryCardComponent: React.FC<MemoryCardProps> = ({ memory, albumName, onC
     }
   })();
 
-  const hasFooterContent = Boolean(formattedDate || memory.title || memory.caption);
+  const hasFooterContent = Boolean(formattedDate || memory.title || memory.caption || albumName);
 
   return (
     <div
@@ -73,7 +73,7 @@ const MemoryCardComponent: React.FC<MemoryCardProps> = ({ memory, albumName, onC
       onMouseEnter={handleWarmPreload}
       onTouchStart={handleWarmPreload}
       onFocus={handleWarmPreload}
-      className="group relative cursor-pointer break-inside-avoid mb-4 sm:mb-6 rounded-2xl overflow-hidden bg-white border border-slate-100 shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 select-none"
+      className="group relative cursor-pointer break-inside-avoid mb-4 sm:mb-6 rounded-2xl overflow-hidden night-card night-card-interactive select-none"
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {
@@ -85,21 +85,21 @@ const MemoryCardComponent: React.FC<MemoryCardProps> = ({ memory, albumName, onC
       aria-label={`View ${memory.title || 'memory'}`}
     >
       {/* Media container */}
-      <div className="relative aspect-4/3 w-full bg-[#FAF7F2] overflow-hidden">
+      <div className="relative aspect-4/3 w-full bg-[#0B1D35] [.light_&]:bg-[#EBF3FA] overflow-hidden">
         {/* Skeleton while loading */}
         {!isLoaded && !hasError && (
-          <div className="absolute inset-0 bg-slate-100/80 animate-pulse flex items-center justify-center">
+          <div className="absolute inset-0 bg-[#102642]/80 [.light_&]:bg-slate-200/70 animate-pulse flex items-center justify-center">
             {memory.type === 'video' ? (
-              <Film className="w-7 h-7 text-slate-300" />
+              <Film className="w-7 h-7 text-[#6FA8DC]/50" />
             ) : (
-              <ImageIcon className="w-7 h-7 text-slate-300" />
+              <ImageIcon className="w-7 h-7 text-[#6FA8DC]/50" />
             )}
           </div>
         )}
 
         {/* Media Content */}
         {memory.type === 'video' && !activeImageUrl ? (
-          <div className="w-full h-full relative bg-slate-900">
+          <div className="w-full h-full relative bg-[#0B1D35]">
             {memory.mediaUrl ? (
               <video
                 src={memory.mediaUrl}
@@ -111,11 +111,11 @@ const MemoryCardComponent: React.FC<MemoryCardProps> = ({ memory, albumName, onC
                   setHasError(true);
                   setIsLoaded(true);
                 }}
-                className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-300"
+                className="w-full h-full object-cover group-hover:scale-[1.02] group-hover:brightness-105 transition-all duration-200"
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
-                <Film className="w-10 h-10 text-sky-400" />
+                <Film className="w-10 h-10 text-[#6FA8DC]" />
               </div>
             )}
           </div>
@@ -131,77 +131,75 @@ const MemoryCardComponent: React.FC<MemoryCardProps> = ({ memory, albumName, onC
             }}
             onError={() => {
               // Gracefully fall back to media_url if thumbnail_url is missing or broken on older records
-              if (
-                fallbackMediaUrl &&
-                activeImageUrl !== fallbackMediaUrl
-              ) {
+              if (fallbackMediaUrl && activeImageUrl !== fallbackMediaUrl) {
                 setActiveImageUrl(fallbackMediaUrl);
                 return;
               }
               setHasError(true);
               setIsLoaded(true);
             }}
-            className={`w-full h-full object-cover group-hover:scale-103 transition-opacity duration-200 ${
+            className={`w-full h-full object-cover group-hover:scale-[1.02] group-hover:brightness-105 transition-all duration-200 ${
               isLoaded ? 'opacity-100' : 'opacity-0'
             }`}
           />
         ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center bg-sky-50/60 text-sky-400 p-4">
+          <div className="w-full h-full flex flex-col items-center justify-center bg-[#0B1D35] [.light_&]:bg-sky-50/70 text-[#6FA8DC] p-4">
             <ImageIcon className="w-10 h-10 mb-1" />
-            <span className="text-xs font-medium text-slate-400">Media Preview</span>
+            <span className="text-xs font-medium text-[var(--text-muted)]">Media Preview</span>
           </div>
         )}
 
-        {/* Video Play badge overlay */}
+        {/* Video Play overlay */}
         {memory.type === 'video' && (
-          <div className="absolute inset-0 bg-slate-900/20 group-hover:bg-slate-900/10 flex items-center justify-center transition-colors">
-            <div className="w-11 h-11 rounded-full bg-white/95 text-sky-600 flex items-center justify-center shadow-md group-hover:scale-105 transition-transform">
-              <Play className="w-5 h-5 ml-0.5 fill-sky-600" />
+          <div className="absolute inset-0 bg-[#071426]/30 group-hover:bg-[#071426]/15 flex items-center justify-center transition-colors">
+            <div className="w-11 h-11 rounded-full bg-[#102642]/90 border border-[#A9D6F5]/40 text-[#D9ECFF] flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
+              <Play className="w-5 h-5 ml-0.5 fill-[#D9ECFF]" />
             </div>
           </div>
         )}
 
-        {/* Media type indicator badge */}
-        <div className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-md bg-slate-900/55 backdrop-blur-xs text-white text-[10px] font-medium flex items-center gap-1">
+        {/* Subtle media type indicator */}
+        <div className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-md bg-[#071426]/70 backdrop-blur-xs border border-[#A9D6F5]/20 text-[#D9ECFF] text-[10px] font-medium flex items-center gap-1">
           {memory.type === 'video' ? (
             <>
-              <Film className="w-3 h-3 text-sky-200" />
+              <Film className="w-3 h-3 text-[#A9D6F5]" />
               <span>Video</span>
             </>
           ) : (
             <>
-              <ImageIcon className="w-3 h-3 text-sky-200" />
+              <ImageIcon className="w-3 h-3 text-[#A9D6F5]" />
               <span>Photo</span>
             </>
           )}
         </div>
-
-        {/* Optional Album tag */}
-        {albumName && (
-          <div className="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded-md bg-white/90 backdrop-blur-xs text-slate-700 text-[10px] font-semibold tracking-wide shadow-xs truncate max-w-[140px]">
-            {albumName}
-          </div>
-        )}
       </div>
 
       {/* Info card footer */}
       {hasFooterContent && (
         <div className="p-3.5 sm:p-4">
-          {formattedDate && (
-            <div className="flex items-center gap-1.5 text-[11px] font-medium text-sky-600 mb-1">
-              <Calendar className="w-3 h-3" />
-              <span>{formattedDate}</span>
+          {(formattedDate || albumName) && (
+            <div className="flex items-center gap-1.5 text-[11px] font-medium text-[#A9D6F5] [.light_&]:text-[#2563EB] mb-1 truncate">
+              {formattedDate && (
+                <>
+                  <Calendar className="w-3 h-3 shrink-0 text-[#6FA8DC]" />
+                  <span>{formattedDate}</span>
+                </>
+              )}
+              {formattedDate && albumName && <span aria-hidden="true">·</span>}
+              {albumName && (
+                <span className="text-[var(--text-muted)] truncate">{albumName}</span>
+              )}
             </div>
           )}
 
           {memory.title && (
-            <h3 className="text-sm font-semibold text-slate-800 line-clamp-1 group-hover:text-sky-700 transition-colors">
+            <h3 className="text-sm font-semibold text-[var(--text-primary)] line-clamp-1 group-hover:text-[#D9ECFF] [.light_&]:group-hover:text-[#2563EB] transition-colors">
               {memory.title}
             </h3>
           )}
 
           {memory.caption && (
-            <p className="text-xs text-slate-500 line-clamp-2 mt-1 font-light leading-relaxed">
+            <p className="text-xs text-[var(--text-secondary)] line-clamp-2 mt-1 font-light leading-relaxed">
               {memory.caption}
             </p>
           )}

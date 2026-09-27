@@ -118,20 +118,20 @@ export const AdminAlbums: React.FC<AdminAlbumsProps> = ({ navigate }) => {
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 min-h-[85vh]">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-6 border-b border-slate-200/80">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-6 border-b border-[var(--border-subtle)]">
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate('/familyadmin/dashboard')}
-            className="p-2 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-white border border-slate-200 transition"
+            className="p-2 rounded-xl btn-night-secondary cursor-pointer"
             aria-label="Back to dashboard"
           >
             <ArrowLeft className="w-4 h-4" />
           </button>
           <div>
-            <h1 className="font-serif text-2xl sm:text-3xl font-bold text-slate-900">
+            <h1 className="font-serif text-2xl sm:text-3xl font-semibold text-[var(--text-primary)]">
               Manage Albums
             </h1>
-            <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+            <p className="text-xs sm:text-sm text-[var(--text-secondary)] mt-0.5">
               Create and organize milestones, growth months, and special events.
             </p>
           </div>
@@ -139,7 +139,7 @@ export const AdminAlbums: React.FC<AdminAlbumsProps> = ({ navigate }) => {
 
         <button
           onClick={openCreateModal}
-          className="px-4 py-2.5 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs sm:text-sm font-semibold shadow-md shadow-sky-200 flex items-center gap-2 transition"
+          className="px-4 py-2.5 btn-night-primary rounded-xl text-xs sm:text-sm flex items-center gap-2 cursor-pointer"
         >
           <Plus className="w-4 h-4" />
           <span>New Album</span>
@@ -148,52 +148,54 @@ export const AdminAlbums: React.FC<AdminAlbumsProps> = ({ navigate }) => {
 
       {/* Album List */}
       {isLoading ? (
-        <div className="text-center py-16 text-slate-400 text-sm">Loading albums...</div>
+        <div className="text-center py-16 text-[var(--text-muted)] text-sm">Loading albums...</div>
       ) : albums.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {albums.map((album) => (
             <div
               key={album.id}
-              className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-xs flex flex-col justify-between"
+              className="night-card night-card-interactive rounded-2xl p-4 flex flex-col justify-between"
             >
               <div>
-                <div className="relative aspect-16/10 rounded-xl overflow-hidden bg-slate-100 mb-3">
+                <div className="relative aspect-16/10 rounded-xl overflow-hidden bg-[#0B1D35] mb-3">
                   {album.coverUrl ? (
                     <img
                       src={album.coverUrl}
                       alt={album.name}
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center bg-sky-50 text-sky-500">
+                    <div className="w-full h-full flex flex-col items-center justify-center bg-[#0B1D35] [.light_&]:bg-sky-50 text-[#6FA8DC]">
                       <FolderHeart className="w-10 h-10 mb-1" />
-                      <span className="text-[11px] font-medium text-slate-400">No cover image</span>
+                      <span className="text-[11px] font-medium text-[var(--text-muted)]">No cover image</span>
                     </div>
                   )}
-                  <span className="absolute top-2 right-2 px-2 py-0.5 rounded-md bg-black/60 text-white text-[10px] font-medium">
+                  <span className="absolute top-2 right-2 px-2 py-0.5 rounded-md bg-[#071426]/75 border border-[#A9D6F5]/20 text-[#D9ECFF] text-[10px] font-medium tabular-nums">
                     Order: {album.sortOrder}
                   </span>
                 </div>
 
-                <h3 className="font-semibold text-slate-800 text-base">{album.name}</h3>
+                <h3 className="font-semibold text-[var(--text-primary)] text-base">{album.name}</h3>
                 {album.description && (
-                  <p className="text-xs text-slate-500 font-light mt-1 line-clamp-2">
+                  <p className="text-xs text-[var(--text-secondary)] font-light mt-1 line-clamp-2">
                     {album.description}
                   </p>
                 )}
               </div>
 
-              <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+              <div className="mt-4 pt-3 border-t border-[var(--border-subtle)] flex items-center justify-end gap-2">
                 <button
                   onClick={() => openEditModal(album)}
-                  className="px-3 py-1.5 text-xs font-semibold text-sky-600 bg-sky-50 hover:bg-sky-100 rounded-xl flex items-center gap-1 transition"
+                  className="px-3 py-1.5 text-xs font-semibold btn-night-secondary rounded-xl flex items-center gap-1 cursor-pointer"
                 >
-                  <Edit3 className="w-3.5 h-3.5" />
+                  <Edit3 className="w-3.5 h-3.5 text-[#6FA8DC]" />
                   <span>Edit</span>
                 </button>
                 <button
                   onClick={() => setDeletingAlbum(album)}
-                  className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition"
+                  className="p-1.5 text-[var(--text-muted)] hover:text-rose-400 hover:bg-rose-500/10 rounded-xl transition cursor-pointer"
                   title="Delete album"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -203,15 +205,15 @@ export const AdminAlbums: React.FC<AdminAlbumsProps> = ({ navigate }) => {
           ))}
         </div>
       ) : (
-        <div className="bg-white rounded-3xl p-12 text-center border border-slate-200 max-w-md mx-auto">
-          <FolderHeart className="w-12 h-12 text-sky-400 mx-auto mb-3" />
-          <h3 className="font-serif text-lg font-bold text-slate-800">No Albums Yet</h3>
-          <p className="text-xs text-slate-500 mt-1 mb-6">
+        <div className="night-card rounded-3xl p-12 text-center max-w-md mx-auto">
+          <FolderHeart className="w-12 h-12 text-[#6FA8DC] mx-auto mb-3" />
+          <h3 className="font-serif text-lg font-bold text-[var(--text-primary)]">No Albums Yet</h3>
+          <p className="text-xs text-[var(--text-secondary)] mt-1 mb-6">
             Create albums like "Month 1", "Christening", "First Words" to organize memories.
           </p>
           <button
             onClick={openCreateModal}
-            className="px-5 py-2.5 bg-sky-600 text-white text-xs font-semibold rounded-xl hover:bg-sky-700 transition"
+            className="px-5 py-2.5 btn-night-primary text-xs rounded-xl cursor-pointer"
           >
             Create Your First Album
           </button>
@@ -220,26 +222,26 @@ export const AdminAlbums: React.FC<AdminAlbumsProps> = ({ navigate }) => {
 
       {/* Album Modal (Create or Edit) */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-fade-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#071426]/75 backdrop-blur-xs animate-fade-in">
           <form
             onSubmit={handleSaveAlbum}
-            className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 space-y-4"
+            className="night-card rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4"
           >
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <h3 className="text-base font-bold text-slate-900">
+            <div className="flex items-center justify-between pb-3 border-b border-[var(--border-subtle)]">
+              <h3 className="text-base font-bold text-[var(--text-primary)]">
                 {editingAlbum ? 'Edit Album' : 'Create New Album'}
               </h3>
               <button
                 type="button"
                 onClick={() => setIsModalOpen(false)}
-                className="p-1 rounded-lg text-slate-400 hover:text-slate-600"
+                className="p-1 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
+              <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">
                 Album Name *
               </label>
               <input
@@ -248,12 +250,12 @@ export const AdminAlbums: React.FC<AdminAlbumsProps> = ({ navigate }) => {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="e.g. Month 6: First Bites"
-                className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:bg-white"
+                className="w-full px-3.5 py-2 bg-[#0B1D35] [.light_&]:bg-slate-50 border border-[var(--border-subtle)] rounded-xl text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-hidden focus:ring-2 focus:ring-[#6FA8DC]/40"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
+              <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">
                 Description
               </label>
               <textarea
@@ -261,12 +263,12 @@ export const AdminAlbums: React.FC<AdminAlbumsProps> = ({ navigate }) => {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Brief sentimental note about this album chapter..."
-                className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:bg-white"
+                className="w-full px-3.5 py-2 bg-[#0B1D35] [.light_&]:bg-slate-50 border border-[var(--border-subtle)] rounded-xl text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-hidden focus:ring-2 focus:ring-[#6FA8DC]/40"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
+              <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">
                 Cover Image URL (optional)
               </label>
               <input
@@ -274,19 +276,19 @@ export const AdminAlbums: React.FC<AdminAlbumsProps> = ({ navigate }) => {
                 value={coverUrl}
                 onChange={(e) => setCoverUrl(e.target.value)}
                 placeholder="https://..."
-                className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:bg-white"
+                className="w-full px-3.5 py-2 bg-[#0B1D35] [.light_&]:bg-slate-50 border border-[var(--border-subtle)] rounded-xl text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-hidden focus:ring-2 focus:ring-[#6FA8DC]/40"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
+              <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">
                 Display Order (e.g. 0, 1, 2...)
               </label>
               <input
                 type="number"
                 value={sortOrder}
                 onChange={(e) => setSortOrder(Number(e.target.value))}
-                className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:bg-white"
+                className="w-full px-3.5 py-2 bg-[#0B1D35] [.light_&]:bg-slate-50 border border-[var(--border-subtle)] rounded-xl text-sm text-[var(--text-primary)] focus:outline-hidden focus:ring-2 focus:ring-[#6FA8DC]/40"
               />
             </div>
 
@@ -294,14 +296,14 @@ export const AdminAlbums: React.FC<AdminAlbumsProps> = ({ navigate }) => {
               <button
                 type="button"
                 onClick={() => setIsModalOpen(false)}
-                className="px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-xl transition"
+                className="px-4 py-2 text-xs font-medium btn-night-secondary rounded-xl cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isSaving}
-                className="px-5 py-2 text-xs font-semibold text-white bg-sky-600 hover:bg-sky-700 disabled:bg-slate-300 rounded-xl shadow-xs transition flex items-center gap-1.5"
+                className="px-5 py-2 text-xs btn-night-primary disabled:opacity-50 rounded-xl flex items-center gap-1.5 cursor-pointer"
               >
                 {isSaving ? (
                   <>

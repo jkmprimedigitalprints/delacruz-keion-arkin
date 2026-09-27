@@ -231,16 +231,16 @@ export const AdminMemories: React.FC<AdminMemoriesProps> = ({ navigate }) => {
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate('/familyadmin/dashboard')}
-            className="p-2 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-white border border-slate-200 transition"
+            className="p-2 rounded-xl btn-night-secondary cursor-pointer"
             aria-label="Back to dashboard"
           >
             <ArrowLeft className="w-4 h-4" />
           </button>
           <div>
-            <h1 className="font-serif text-2xl sm:text-3xl font-bold text-slate-900">
+            <h1 className="font-serif text-2xl sm:text-3xl font-semibold text-[var(--text-primary)]">
               Manage Memories ({filteredMemories.length})
             </h1>
-            <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+            <p className="text-xs sm:text-sm text-[var(--text-secondary)] mt-0.5">
               Edit captions, move albums, or remove media items.
             </p>
           </div>
@@ -252,7 +252,7 @@ export const AdminMemories: React.FC<AdminMemoriesProps> = ({ navigate }) => {
               type="button"
               onClick={() => setIsConfirmDeleteAllOpen(true)}
               disabled={isDeletingAll}
-              className="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-600 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-1.5 transition disabled:opacity-50"
+              className="px-3.5 py-2 bg-rose-500/12 hover:bg-rose-500/20 border border-rose-400/30 text-rose-300 [.light_&]:text-rose-600 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-1.5 transition disabled:opacity-50 cursor-pointer"
             >
               <Trash2 className="w-4 h-4" />
               <span>Delete All ({memories.length})</span>
@@ -260,7 +260,7 @@ export const AdminMemories: React.FC<AdminMemoriesProps> = ({ navigate }) => {
           )}
           <button
             onClick={() => navigate('/familyadmin/upload')}
-            className="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs sm:text-sm font-semibold shadow-xs transition"
+            className="px-4 py-2 btn-night-primary rounded-xl text-xs sm:text-sm cursor-pointer"
           >
             Add More Media
           </button>
@@ -268,21 +268,21 @@ export const AdminMemories: React.FC<AdminMemoriesProps> = ({ navigate }) => {
       </div>
 
       {/* Search and Filters Bar */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-xs mb-6 flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
+      <div className="night-card rounded-2xl p-4 mb-6 flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
         {/* Search */}
         <div className="relative flex-1 max-w-md">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <Search className="w-4 h-4 text-[#6FA8DC] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search by title, caption, filename..."
-            className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-sky-200 transition"
+            className="w-full pl-9 pr-4 py-2 bg-[#0B1D35] [.light_&]:bg-slate-50 border border-[var(--border-subtle)] rounded-xl text-xs sm:text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-hidden focus:ring-2 focus:ring-[#6FA8DC]/40 transition"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text-primary)] text-xs cursor-pointer"
             >
               ✕
             </button>
@@ -295,22 +295,34 @@ export const AdminMemories: React.FC<AdminMemoriesProps> = ({ navigate }) => {
           <select
             value={selectedType}
             onChange={(e) => setSelectedType(e.target.value as any)}
-            className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-700 focus:bg-white transition"
+            className="px-3 py-2 rounded-xl text-xs font-medium btn-night-secondary cursor-pointer"
           >
-            <option value="all">All Types</option>
-            <option value="photo">Photos Only</option>
-            <option value="video">Videos Only</option>
+            <option value="all" className="bg-[#0B1D35] text-[#F0F7FF] [.light_&]:bg-white [.light_&]:text-slate-800">
+              All Types
+            </option>
+            <option value="photo" className="bg-[#0B1D35] text-[#F0F7FF] [.light_&]:bg-white [.light_&]:text-slate-800">
+              Photos Only
+            </option>
+            <option value="video" className="bg-[#0B1D35] text-[#F0F7FF] [.light_&]:bg-white [.light_&]:text-slate-800">
+              Videos Only
+            </option>
           </select>
 
           {/* Album filter */}
           <select
             value={selectedAlbumId}
             onChange={(e) => setSelectedAlbumId(e.target.value)}
-            className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-700 focus:bg-white transition"
+            className="px-3 py-2 rounded-xl text-xs font-medium btn-night-secondary cursor-pointer"
           >
-            <option value="">All Albums</option>
+            <option value="" className="bg-[#0B1D35] text-[#F0F7FF] [.light_&]:bg-white [.light_&]:text-slate-800">
+              All Albums
+            </option>
             {albums.map((album) => (
-              <option key={album.id} value={album.id}>
+              <option
+                key={album.id}
+                value={album.id}
+                className="bg-[#0B1D35] text-[#F0F7FF] [.light_&]:bg-white [.light_&]:text-slate-800"
+              >
                 {album.name}
               </option>
             ))}
@@ -319,9 +331,9 @@ export const AdminMemories: React.FC<AdminMemoriesProps> = ({ navigate }) => {
           {/* Sort order */}
           <button
             onClick={() => setSortOrder(sortOrder === 'newest' ? 'oldest' : 'newest')}
-            className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-700 hover:bg-slate-100 flex items-center gap-1.5 transition"
+            className="px-3 py-2 rounded-xl text-xs font-medium btn-night-secondary flex items-center gap-1.5 cursor-pointer"
           >
-            <ArrowUpDown className="w-3.5 h-3.5 text-sky-500" />
+            <ArrowUpDown className="w-3.5 h-3.5 text-[#6FA8DC]" />
             <span>{sortOrder === 'newest' ? 'Newest' : 'Oldest'}</span>
           </button>
         </div>
@@ -329,7 +341,7 @@ export const AdminMemories: React.FC<AdminMemoriesProps> = ({ navigate }) => {
 
       {/* Memory Table / Cards */}
       {isLoading ? (
-        <div className="text-center py-16 text-slate-400 text-sm">Loading memories...</div>
+        <div className="text-center py-16 text-[var(--text-muted)] text-sm">Loading memories...</div>
       ) : filteredMemories.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {filteredMemories.map((m) => {
@@ -353,12 +365,12 @@ export const AdminMemories: React.FC<AdminMemoriesProps> = ({ navigate }) => {
             return (
               <div
                 key={m.id}
-                className="bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs hover:shadow-md transition flex flex-col justify-between"
+                className="night-card night-card-interactive rounded-2xl overflow-hidden flex flex-col justify-between"
               >
                 {/* Media preview */}
                 <div
                   onClick={() => setPreviewMemory(m)}
-                  className="relative aspect-4/3 bg-slate-900 overflow-hidden cursor-pointer group"
+                  className="relative aspect-4/3 bg-[#0B1D35] overflow-hidden cursor-pointer group"
                 >
                   {m.type === 'video' ? (
                     <>
@@ -368,7 +380,7 @@ export const AdminMemories: React.FC<AdminMemoriesProps> = ({ navigate }) => {
                           alt={m.title}
                           loading="lazy"
                           decoding="async"
-                          className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-200"
+                          className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-200"
                         />
                       ) : m.mediaUrl ? (
                         <video
@@ -376,16 +388,16 @@ export const AdminMemories: React.FC<AdminMemoriesProps> = ({ navigate }) => {
                           preload="metadata"
                           muted
                           playsInline
-                          className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-200"
+                          className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-200"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-slate-900 text-sky-400">
+                        <div className="w-full h-full flex items-center justify-center bg-[#0B1D35] text-[#6FA8DC]">
                           <Film className="w-10 h-10" />
                         </div>
                       )}
-                      <div className="absolute inset-0 bg-black/20 flex items-center justify-center pointer-events-none">
-                        <div className="w-10 h-10 rounded-full bg-white/90 text-sky-600 flex items-center justify-center shadow-md">
-                          <Film className="w-5 h-5 fill-sky-600" />
+                      <div className="absolute inset-0 bg-[#071426]/30 flex items-center justify-center pointer-events-none">
+                        <div className="w-10 h-10 rounded-full bg-[#102642]/90 border border-[#A9D6F5]/30 text-[#D9ECFF] flex items-center justify-center shadow-md">
+                          <Film className="w-5 h-5" />
                         </div>
                       </div>
                     </>
@@ -401,57 +413,62 @@ export const AdminMemories: React.FC<AdminMemoriesProps> = ({ navigate }) => {
                           target.src = m.mediaUrl;
                         }
                       }}
-                      className="w-full h-full object-cover bg-slate-100 group-hover:scale-103 transition-transform duration-200"
+                      className="w-full h-full object-cover bg-[#0B1D35] group-hover:scale-[1.02] transition-transform duration-200"
                     />
                   )}
-                  <div className="absolute top-2 right-2 px-2 py-0.5 rounded-md bg-black/60 text-white text-[10px] font-semibold">
+                  <div className="absolute top-2 right-2 px-2 py-0.5 rounded-md bg-[#071426]/75 border border-[#A9D6F5]/20 text-[#D9ECFF] text-[10px] font-semibold">
                     {m.type === 'video' ? 'VIDEO' : 'PHOTO'}
                   </div>
-                  {m.albumId && albumMap.has(m.albumId) && (
-                    <div className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-white/90 text-slate-700 text-[10px] font-semibold truncate max-w-[120px]">
-                      {albumMap.get(m.albumId)}
-                    </div>
-                  )}
                 </div>
 
                 {/* Info */}
                 <div className="p-3.5 flex-1 flex flex-col justify-between">
                   <div>
-                    <span className="text-[11px] text-sky-600 font-medium">{formattedDate}</span>
-                    <h3 className="text-sm font-semibold text-slate-800 line-clamp-1 mt-0.5">
+                    <div className="flex items-center gap-1.5 text-[11px] text-[#A9D6F5] [.light_&]:text-[#2563EB] font-medium truncate">
+                      <span>{formattedDate}</span>
+                      {m.albumId && albumMap.has(m.albumId) && (
+                        <>
+                          <span aria-hidden="true">·</span>
+                          <span className="text-[var(--text-muted)] truncate">
+                            {albumMap.get(m.albumId)}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                    <h3 className="text-sm font-semibold text-[var(--text-primary)] line-clamp-1 mt-0.5">
                       {m.title || 'Untitled'}
                     </h3>
                     {m.caption && (
-                      <p className="text-xs text-slate-500 line-clamp-2 mt-1 font-light">
+                      <p className="text-xs text-[var(--text-secondary)] line-clamp-2 mt-1 font-light">
                         {m.caption}
                       </p>
                     )}
                   </div>
 
                   {/* Actions */}
-                  <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between">
+                  <div className="mt-3 pt-2.5 border-t border-[var(--border-subtle)] flex items-center justify-between">
                     <a
                       href={m.mediaUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-1.5 text-slate-400 hover:text-sky-600 rounded-lg hover:bg-sky-50 transition"
+                      className="p-1.5 text-[var(--text-muted)] hover:text-[#A9D6F5] rounded-lg hover:bg-[#0B1D35]/60 transition"
                       title="View original media"
                     >
                       <ExternalLink className="w-4 h-4" />
                     </a>
 
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1.5">
                       <button
                         onClick={() => openEditModal(m)}
-                        className="px-2.5 py-1 text-xs font-semibold text-sky-600 bg-sky-50 hover:bg-sky-100 rounded-lg flex items-center gap-1 transition"
+                        className="px-2.5 py-1 text-xs font-semibold btn-night-secondary rounded-lg flex items-center gap-1 cursor-pointer"
                       >
-                        <Edit3 className="w-3.5 h-3.5" />
+                        <Edit3 className="w-3.5 h-3.5 text-[#6FA8DC]" />
                         <span>Edit</span>
                       </button>
 
                       <button
                         onClick={() => setDeletingMemory(m)}
-                        className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition"
+                        className="p-1.5 text-[var(--text-muted)] hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition cursor-pointer"
                         title="Delete memory"
                         aria-label="Delete"
                       >
@@ -465,68 +482,78 @@ export const AdminMemories: React.FC<AdminMemoriesProps> = ({ navigate }) => {
           })}
         </div>
       ) : (
-        <div className="bg-white rounded-2xl p-12 text-center border border-slate-200 text-slate-400 text-sm">
+        <div className="night-card rounded-2xl p-12 text-center text-[var(--text-muted)] text-sm">
           No memories found matching your search and filter criteria.
         </div>
       )}
 
       {/* Edit Memory Modal */}
       {editingMemory && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-fade-in">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <h3 className="text-base font-bold text-slate-900">Edit Memory Details</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#071426]/75 backdrop-blur-xs animate-fade-in">
+          <div className="night-card rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-[var(--border-subtle)]">
+              <h3 className="text-base font-bold text-[var(--text-primary)]">Edit Memory Details</h3>
               <button
                 onClick={() => setEditingMemory(null)}
-                className="p-1 rounded-lg text-slate-400 hover:text-slate-600"
+                className="p-1 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Title</label>
+              <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">Title</label>
               <input
                 type="text"
                 value={editTitle}
                 onChange={(e) => setEditTitle(e.target.value)}
-                className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:bg-white"
+                className="w-full px-3.5 py-2 bg-[#0B1D35] [.light_&]:bg-slate-50 border border-[var(--border-subtle)] rounded-xl text-sm text-[var(--text-primary)] focus:outline-hidden focus:ring-2 focus:ring-[#6FA8DC]/40"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Caption</label>
+              <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">Caption</label>
               <textarea
                 rows={3}
                 value={editCaption}
                 onChange={(e) => setEditCaption(e.target.value)}
-                className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:bg-white"
+                className="w-full px-3.5 py-2 bg-[#0B1D35] [.light_&]:bg-slate-50 border border-[var(--border-subtle)] rounded-xl text-sm text-[var(--text-primary)] focus:outline-hidden focus:ring-2 focus:ring-[#6FA8DC]/40"
               />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Media Type</label>
+                <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">Media Type</label>
                 <select
                   value={editType}
                   onChange={(e) => setEditType(e.target.value as 'photo' | 'video')}
-                  className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 focus:bg-white"
+                  className="w-full px-3.5 py-2 bg-[#0B1D35] [.light_&]:bg-slate-50 border border-[var(--border-subtle)] rounded-xl text-xs sm:text-sm text-[var(--text-primary)]"
                 >
-                  <option value="photo">Photo</option>
-                  <option value="video">Video</option>
+                  <option value="photo" className="bg-[#0B1D35] text-[#F0F7FF] [.light_&]:bg-white [.light_&]:text-slate-800">
+                    Photo
+                  </option>
+                  <option value="video" className="bg-[#0B1D35] text-[#F0F7FF] [.light_&]:bg-white [.light_&]:text-slate-800">
+                    Video
+                  </option>
                 </select>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Album</label>
+                <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">Album</label>
                 <select
                   value={editAlbumId}
                   onChange={(e) => setEditAlbumId(e.target.value)}
-                  className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 focus:bg-white"
+                  className="w-full px-3.5 py-2 bg-[#0B1D35] [.light_&]:bg-slate-50 border border-[var(--border-subtle)] rounded-xl text-xs sm:text-sm text-[var(--text-primary)]"
                 >
-                  <option value="">None (Unorganized)</option>
+                  <option value="" className="bg-[#0B1D35] text-[#F0F7FF] [.light_&]:bg-white [.light_&]:text-slate-800">
+                    None (Unorganized)
+                  </option>
                   {albums.map((album) => (
-                    <option key={album.id} value={album.id}>
+                    <option
+                      key={album.id}
+                      value={album.id}
+                      className="bg-[#0B1D35] text-[#F0F7FF] [.light_&]:bg-white [.light_&]:text-slate-800"
+                    >
                       {album.name}
                     </option>
                   ))}
@@ -534,14 +561,14 @@ export const AdminMemories: React.FC<AdminMemoriesProps> = ({ navigate }) => {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">
                   Memory Date
                 </label>
                 <input
                   type="date"
                   value={editDate}
                   onChange={(e) => setEditDate(e.target.value)}
-                  className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 focus:bg-white"
+                  className="w-full px-3.5 py-2 bg-[#0B1D35] [.light_&]:bg-slate-50 border border-[var(--border-subtle)] rounded-xl text-xs sm:text-sm text-[var(--text-primary)]"
                 />
               </div>
             </div>
@@ -550,7 +577,7 @@ export const AdminMemories: React.FC<AdminMemoriesProps> = ({ navigate }) => {
               <button
                 type="button"
                 onClick={() => setEditingMemory(null)}
-                className="px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-xl transition"
+                className="px-4 py-2 text-xs font-medium btn-night-secondary rounded-xl cursor-pointer"
               >
                 Cancel
               </button>
@@ -558,7 +585,7 @@ export const AdminMemories: React.FC<AdminMemoriesProps> = ({ navigate }) => {
                 type="button"
                 onClick={handleSaveEdit}
                 disabled={isSavingEdit}
-                className="px-5 py-2 text-xs font-semibold text-white bg-sky-600 hover:bg-sky-700 disabled:bg-slate-300 rounded-xl shadow-xs transition flex items-center gap-1.5"
+                className="px-5 py-2 text-xs btn-night-primary disabled:opacity-50 rounded-xl flex items-center gap-1.5 cursor-pointer"
               >
                 {isSavingEdit ? (
                   <>

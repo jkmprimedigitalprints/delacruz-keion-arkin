@@ -74,34 +74,34 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({ navigate }) => {
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 min-h-[85vh]">
       {/* Header */}
-      <div className="flex items-center gap-3 mb-8 pb-6 border-b border-slate-200/80">
+      <div className="flex items-center gap-3 mb-8 pb-6 border-b border-[var(--border-subtle)]">
         <button
           onClick={() => navigate('/familyadmin/dashboard')}
-          className="p-2 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-white border border-slate-200 transition"
+          className="p-2 rounded-xl btn-night-secondary cursor-pointer"
           aria-label="Back to dashboard"
         >
           <ArrowLeft className="w-4 h-4" />
         </button>
         <div>
-          <h1 className="font-serif text-2xl sm:text-3xl font-bold text-slate-900">
+          <h1 className="font-serif text-2xl sm:text-3xl font-semibold text-[var(--text-primary)]">
             Baby Profile & Album Settings
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+          <p className="text-xs sm:text-sm text-[var(--text-secondary)] mt-0.5">
             Configure the public hero title, birthdate, and sentimental quotes.
           </p>
         </div>
       </div>
 
       {isLoading ? (
-        <div className="text-center py-16 text-slate-400 text-sm">Loading settings...</div>
+        <div className="text-center py-16 text-[var(--text-muted)] text-sm">Loading settings...</div>
       ) : (
         <form
           onSubmit={handleSave}
-          className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6"
+          className="night-card rounded-3xl p-6 sm:p-8 space-y-6"
         >
           {/* Baby Name */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">
               Baby Full Name *
             </label>
             <input
@@ -110,31 +110,31 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({ navigate }) => {
               value={babyName}
               onChange={(e) => setBabyName(e.target.value)}
               placeholder="e.g. Keion Arkin"
-              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-sky-200 transition"
+              className="w-full px-4 py-2.5 bg-[#0B1D35] [.light_&]:bg-slate-50 border border-[var(--border-subtle)] rounded-xl text-sm font-semibold text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-hidden focus:ring-2 focus:ring-[#6FA8DC]/40 transition"
             />
           </div>
 
           {/* Birth Date */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-              <Calendar className="w-3.5 h-3.5 text-sky-500" />
+            <label className="block text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+              <Calendar className="w-3.5 h-3.5 text-[#6FA8DC]" />
               <span>Date of Birth</span>
             </label>
             <input
               type="date"
               value={birthDate}
               onChange={(e) => setBirthDate(e.target.value)}
-              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-sky-200 transition"
+              className="w-full px-4 py-2.5 bg-[#0B1D35] [.light_&]:bg-slate-50 border border-[var(--border-subtle)] rounded-xl text-sm text-[var(--text-primary)] focus:outline-hidden focus:ring-2 focus:ring-[#6FA8DC]/40 transition"
             />
-            <p className="text-[11px] text-slate-400 mt-1">
+            <p className="text-[11px] text-[var(--text-muted)] mt-1">
               Used to calculate and display baby age (e.g. "4 months old") dynamically in the hero.
             </p>
           </div>
 
           {/* Hero Quote */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-              <Heart className="w-3.5 h-3.5 text-rose-400" />
+            <label className="block text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+              <Heart className="w-3.5 h-3.5 text-[#F3C9D9]" />
               <span>Hero Headline Quote</span>
             </label>
             <input
@@ -142,13 +142,13 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({ navigate }) => {
               value={heroQuote}
               onChange={(e) => setHeroQuote(e.target.value)}
               placeholder="e.g. Little moments, Big memories"
-              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-sky-200 transition"
+              className="w-full px-4 py-2.5 bg-[#0B1D35] [.light_&]:bg-slate-50 border border-[var(--border-subtle)] rounded-xl text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-hidden focus:ring-2 focus:ring-[#6FA8DC]/40 transition"
             />
           </div>
 
           {/* Hero Subtitle */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">
               Hero Story Subtitle
             </label>
             <textarea
@@ -156,14 +156,14 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({ navigate }) => {
               value={heroSubtitle}
               onChange={(e) => setHeroSubtitle(e.target.value)}
               placeholder="Every little smile, crawl, and giggle becomes a treasure worth keeping forever."
-              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-sky-200 transition"
+              className="w-full px-4 py-2.5 bg-[#0B1D35] [.light_&]:bg-slate-50 border border-[var(--border-subtle)] rounded-xl text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-hidden focus:ring-2 focus:ring-[#6FA8DC]/40 transition"
             />
           </div>
 
           {/* Profile Avatar / Cover URL */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-              <ImageIcon className="w-3.5 h-3.5 text-sky-500" />
+            <label className="block text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+              <ImageIcon className="w-3.5 h-3.5 text-[#6FA8DC]" />
               <span>Cover Photo / Avatar URL (Optional)</span>
             </label>
             <input
@@ -171,7 +171,7 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({ navigate }) => {
               value={coverPhotoUrl}
               onChange={(e) => setCoverPhotoUrl(e.target.value)}
               placeholder="https://..."
-              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-sky-200 transition"
+              className="w-full px-4 py-2.5 bg-[#0B1D35] [.light_&]:bg-slate-50 border border-[var(--border-subtle)] rounded-xl text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-hidden focus:ring-2 focus:ring-[#6FA8DC]/40 transition"
             />
           </div>
 
@@ -179,7 +179,7 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({ navigate }) => {
             <button
               type="submit"
               disabled={isSaving}
-              className="px-6 py-3 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-semibold text-sm shadow-md shadow-sky-200 flex items-center gap-2 transition"
+              className="px-6 py-3 rounded-xl btn-night-primary text-sm flex items-center gap-2 transition cursor-pointer"
             >
               {isSaving ? (
                 <>

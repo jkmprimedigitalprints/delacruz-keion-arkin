@@ -90,19 +90,19 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ navigate, authState }) =
       onClick={() => inputRef.current?.focus()}
     >
       <div
-        className={`max-w-md w-full bg-white rounded-3xl p-6 sm:p-8 shadow-xl border border-sky-100 transition-transform ${
+        className={`max-w-md w-full night-card rounded-3xl p-6 sm:p-8 shadow-2xl transition-transform ${
           isShaking ? 'animate-bounce' : ''
         }`}
       >
         <div className="text-center">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-sky-500 to-blue-600 text-white flex items-center justify-center mx-auto shadow-lg shadow-sky-200 mb-4">
+          <div className="w-14 h-14 rounded-2xl bg-[#0B1D35] [.light_&]:bg-sky-50 border border-[#6FA8DC]/35 text-[#A9D6F5] [.light_&]:text-[#2563EB] flex items-center justify-center mx-auto shadow-lg mb-4">
             <Shield className="w-7 h-7" />
           </div>
 
-          <h2 className="font-serif text-2xl font-bold text-slate-900">
+          <h2 className="font-serif text-2xl font-bold text-[var(--text-primary)]">
             Family Admin
           </h2>
-          <p className="mt-1 text-xs text-slate-500 font-light">
+          <p className="mt-1 text-xs text-[var(--text-secondary)] font-light">
             Type your 6-digit PIN on your keyboard to unlock.
           </p>
         </div>
@@ -136,10 +136,10 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ navigate, authState }) =
                     key={index}
                     className={`w-11 h-14 sm:w-12 sm:h-15 rounded-2xl border-2 flex items-center justify-center text-2xl font-bold transition-all duration-150 ${
                       isFilled
-                        ? 'border-sky-500 bg-sky-50/70 text-sky-800 scale-105 shadow-xs'
+                        ? 'border-[#6FA8DC] bg-[#153052] [.light_&]:bg-sky-50 text-[#D9ECFF] [.light_&]:text-sky-800 scale-105 shadow-xs'
                         : isCurrent
-                        ? 'border-sky-400 bg-white ring-4 ring-sky-100 animate-pulse'
-                        : 'border-slate-200 bg-slate-50 text-slate-300'
+                        ? 'border-[#A9D6F5] bg-[#0B1D35] [.light_&]:bg-white ring-4 ring-[#6FA8DC]/25 animate-pulse'
+                        : 'border-[var(--border-subtle)] bg-[#0B1D35] [.light_&]:bg-slate-50 text-[var(--text-muted)]'
                     }`}
                   >
                     {isFilled ? '•' : ''}
@@ -149,15 +149,15 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ navigate, authState }) =
             </div>
           </div>
 
-          <p className="text-[11px] text-slate-400 text-center mb-5">
+          <p className="text-[11px] text-[var(--text-muted)] text-center mb-5">
             Enter your 6-digit Family Admin PIN and press{' '}
-            <kbd className="px-1.5 py-0.5 bg-slate-100 border border-slate-200 rounded text-[10px] text-slate-600 font-mono">
+            <kbd className="px-1.5 py-0.5 bg-[#0B1D35] [.light_&]:bg-slate-100 border border-[var(--border-subtle)] rounded text-[10px] text-[#A9D6F5] [.light_&]:text-slate-600 font-mono">
               Enter
             </kbd>
           </p>
 
           {errorMessage && (
-            <p className="text-xs text-rose-600 text-center font-medium mb-4 flex items-center justify-center gap-1">
+            <p className="text-xs text-rose-400 [.light_&]:text-rose-600 text-center font-medium mb-4 flex items-center justify-center gap-1">
               <AlertCircle className="w-3.5 h-3.5 shrink-0" />
               <span>{errorMessage}</span>
             </p>
@@ -167,7 +167,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ navigate, authState }) =
           <button
             type="submit"
             disabled={isLoading || pin.length !== PIN_LENGTH}
-            className="w-full py-3 px-4 rounded-xl bg-sky-600 hover:bg-sky-700 disabled:bg-slate-200 disabled:text-slate-400 text-white font-semibold text-sm shadow-md shadow-sky-200 flex items-center justify-center gap-2 transition"
+            className="w-full py-3 px-4 rounded-xl btn-night-primary disabled:opacity-40 text-sm flex items-center justify-center gap-2 transition cursor-pointer"
           >
             {isLoading ? (
               <>

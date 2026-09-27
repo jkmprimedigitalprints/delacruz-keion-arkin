@@ -7,7 +7,6 @@ import {
   Share2,
   Check,
   FolderHeart,
-  Sparkles,
   Loader2,
 } from 'lucide-react';
 import { Memory, Album } from '../types';
@@ -194,7 +193,6 @@ export const Lightbox: React.FC<LightboxProps> = ({
     touchStartX.current = null;
     touchStartY.current = null;
 
-    // Require intentional horizontal swipe (>= 45px) and horizontal dominance over vertical movement
     if (Math.abs(deltaX) < 45 || Math.abs(deltaX) < Math.abs(deltaY) * 1.25) {
       return;
     }
@@ -261,7 +259,7 @@ export const Lightbox: React.FC<LightboxProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 bg-slate-900/45 backdrop-blur-md select-none"
+      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 bg-[#071426]/82 [.light_&]:bg-slate-900/45 backdrop-blur-md select-none"
       onClick={(e) => {
         if (e.target === e.currentTarget) {
           onClose();
@@ -271,29 +269,34 @@ export const Lightbox: React.FC<LightboxProps> = ({
       aria-modal="true"
       aria-label={cleanTitle || 'Memory viewer'}
     >
-      {/* Premium Minimalist Baby Album Modal Card */}
+      {/* Premium Minimalist Baby Night Album Modal Card */}
       <div
-        className="relative w-[96vw] sm:w-[92vw] max-w-5xl max-h-[94vh] bg-[#FDFBF7] text-slate-800 rounded-3xl shadow-[0_24px_70px_-15px_rgba(15,23,42,0.28)] border border-[#F1ECE1] flex flex-col overflow-hidden transition-all duration-150"
+        className="relative w-[96vw] sm:w-[92vw] max-w-5xl max-h-[94vh] bg-[#0B1D35] [.light_&]:bg-[#FDFBF7] text-[var(--text-primary)] rounded-3xl shadow-[0_24px_70px_-15px_rgba(4,12,24,0.75)] border border-[var(--border-subtle)] flex flex-col overflow-hidden transition-all duration-150"
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
-        {/* Subtle top pastel baby blue & blush accent line */}
-        <div className="h-1 w-full bg-gradient-to-r from-[#E0F2FE] via-[#FDF2F8] to-[#E0F2FE]" />
+        {/* Subtle top baby blue & pastel pink accent line */}
+        <div className="h-0.5 w-full bg-gradient-to-r from-[#6FA8DC]/60 via-[#F3C9D9]/70 to-[#6FA8DC]/60" />
 
-        {/* Header Bar: Subtle Keepsake Badge + Top-Right Circular Controls */}
+        {/* Header Bar: Subtle Keepsake Label + Top-Right Circular Controls */}
         <div className="flex items-center justify-between px-4 sm:px-6 pt-3.5 pb-2.5 shrink-0">
-          <div className="flex items-center gap-2 min-w-0">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#F0F9FF] border border-sky-100/80 text-sky-700 text-[11px] font-medium tracking-wide">
-              <Sparkles className="w-3 h-3 text-sky-400 shrink-0" />
-              <span className="truncate">
-                {currentAlbum ? currentAlbum.name : 'Keion Arkin Keepsake'}
-              </span>
+          <div className="flex items-center gap-2 min-w-0 text-xs font-medium text-[#A9D6F5] [.light_&]:text-[#2563EB]">
+            <span aria-hidden="true" className="text-sm leading-none">
+              ☾
+            </span>
+            <span className="truncate">
+              {currentAlbum ? currentAlbum.name : 'Keion Arkin Keepsake'}
             </span>
             {currentAlbum && (
-              <span className="hidden sm:inline-flex items-center gap-1 text-[11px] text-slate-400">
-                <FolderHeart className="w-3 h-3 text-rose-300" />
-                <span>Album</span>
-              </span>
+              <>
+                <span aria-hidden="true" className="text-[var(--text-muted)]">
+                  ·
+                </span>
+                <span className="hidden sm:inline-flex items-center gap-1 text-[11px] text-[var(--text-muted)]">
+                  <FolderHeart className="w-3 h-3 text-[#F3C9D9]" />
+                  <span>Album</span>
+                </span>
+              </>
             )}
           </div>
 
@@ -302,12 +305,12 @@ export const Lightbox: React.FC<LightboxProps> = ({
             <button
               type="button"
               onClick={handleShare}
-              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/90 hover:bg-sky-50 text-slate-500 hover:text-sky-600 border border-slate-200/70 flex items-center justify-center transition shadow-2xs"
+              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full btn-night-secondary flex items-center justify-center cursor-pointer"
               title={copied ? 'Copied link!' : 'Share memory'}
               aria-label="Share memory"
             >
               {copied ? (
-                <Check className="w-4 h-4 text-emerald-500" />
+                <Check className="w-4 h-4 text-emerald-400" />
               ) : (
                 <Share2 className="w-4 h-4" />
               )}
@@ -319,7 +322,7 @@ export const Lightbox: React.FC<LightboxProps> = ({
                 download={memory.fileName || 'memory'}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/90 hover:bg-sky-50 text-slate-500 hover:text-sky-600 border border-slate-200/70 flex items-center justify-center transition shadow-2xs"
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full btn-night-secondary flex items-center justify-center"
                 title="Download original"
                 aria-label="Download original"
               >
@@ -330,7 +333,7 @@ export const Lightbox: React.FC<LightboxProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="w-10 h-10 rounded-full bg-white hover:bg-rose-50/70 text-slate-600 hover:text-slate-900 border border-slate-200/80 flex items-center justify-center transition shadow-xs ml-1"
+              className="w-10 h-10 rounded-full btn-night-secondary hover:border-[#F3C9D9]/50 flex items-center justify-center ml-1 cursor-pointer"
               title="Close (Esc)"
               aria-label="Close viewer"
             >
@@ -341,13 +344,13 @@ export const Lightbox: React.FC<LightboxProps> = ({
 
         {/* Stable Responsive Media Stage (Prevents Layout Shift between Portrait/Landscape/Square) */}
         <div className="relative w-full h-[56vh] sm:h-[62vh] md:h-[66vh] max-h-[78vh] px-3 sm:px-14 py-2 flex items-center justify-center shrink-0">
-          {/* Soft cream inner mat */}
-          <div className="relative w-full h-full rounded-2xl bg-[#F7F4EE]/90 border border-[#EFEAE0] flex items-center justify-center overflow-hidden">
-            {/* Subtle corner loading pill when high-res image is finishing download */}
+          {/* Midnight Navy inner mat (Soft cream in Light mode) */}
+          <div className="relative w-full h-full rounded-2xl bg-[#071426]/90 [.light_&]:bg-[#F7F4EE]/90 border border-[var(--border-subtle)] flex items-center justify-center overflow-hidden">
+            {/* Subtle corner loading indicator when high-res image is finishing download */}
             {isHiResLoading && (
-              <div className="absolute top-3 right-3 z-20 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/90 backdrop-blur-xs border border-sky-100 text-slate-500 text-[11px] font-medium shadow-2xs">
-                <Loader2 className="w-3 h-3 animate-spin text-sky-500" />
-                <span> Optimizing</span>
+              <div className="absolute top-3 right-3 z-20 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#102642]/90 [.light_&]:bg-white/90 backdrop-blur-xs border border-[var(--border-subtle)] text-[var(--text-secondary)] text-[11px] font-medium">
+                <Loader2 className="w-3 h-3 animate-spin text-[#6FA8DC]" />
+                <span>Optimizing</span>
               </div>
             )}
 
@@ -364,7 +367,7 @@ export const Lightbox: React.FC<LightboxProps> = ({
                   className="w-full h-full max-w-full max-h-full object-contain rounded-xl transition-opacity duration-150"
                 />
               ) : (
-                <div className="text-xs text-slate-400">Video unavailable</div>
+                <div className="text-xs text-[var(--text-muted)]">Video unavailable</div>
               )
             ) : displayedSrc && !imageLoadError ? (
               <img
@@ -380,11 +383,7 @@ export const Lightbox: React.FC<LightboxProps> = ({
                   }
                 }}
                 onError={() => {
-                  // Fallback to thumbnail_url if media_url fails
-                  if (
-                    memory.thumbnailUrl &&
-                    displayedSrc !== memory.thumbnailUrl
-                  ) {
+                  if (memory.thumbnailUrl && displayedSrc !== memory.thumbnailUrl) {
                     setDisplayedSrc(memory.thumbnailUrl);
                     setIsHiResLoading(false);
                     return;
@@ -396,8 +395,8 @@ export const Lightbox: React.FC<LightboxProps> = ({
                 draggable={false}
               />
             ) : (
-              <div className="flex flex-col items-center justify-center gap-2 text-slate-400 p-6">
-                <Loader2 className="w-6 h-6 animate-spin text-sky-400" />
+              <div className="flex flex-col items-center justify-center gap-2 text-[var(--text-muted)] p-6">
+                <Loader2 className="w-6 h-6 animate-spin text-[#6FA8DC]" />
                 <span className="text-xs">Loading photo...</span>
               </div>
             )}
@@ -411,7 +410,7 @@ export const Lightbox: React.FC<LightboxProps> = ({
                 e.stopPropagation();
                 handlePrev();
               }}
-              className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/95 hover:bg-sky-50 text-slate-700 hover:text-sky-600 border border-slate-200/80 shadow-md flex items-center justify-center transition active:scale-95"
+              className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-11 sm:h-11 rounded-full btn-night-secondary shadow-lg flex items-center justify-center active:scale-95 cursor-pointer"
               title="Previous (Left Arrow)"
               aria-label="Previous memory"
             >
@@ -427,7 +426,7 @@ export const Lightbox: React.FC<LightboxProps> = ({
                 e.stopPropagation();
                 handleNext();
               }}
-              className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/95 hover:bg-sky-50 text-slate-700 hover:text-sky-600 border border-slate-200/80 shadow-md flex items-center justify-center transition active:scale-95"
+              className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-11 sm:h-11 rounded-full btn-night-secondary shadow-lg flex items-center justify-center active:scale-95 cursor-pointer"
               title="Next (Right Arrow)"
               aria-label="Next memory"
             >
@@ -441,19 +440,19 @@ export const Lightbox: React.FC<LightboxProps> = ({
           {hasMetadata && (
             <div className="max-w-2xl mx-auto flex flex-col items-center gap-0.5">
               {cleanTitle && (
-                <h2 className="font-serif text-base sm:text-xl font-semibold text-slate-800 leading-snug">
+                <h2 className="font-serif text-base sm:text-xl font-semibold text-[var(--text-primary)] leading-snug">
                   {cleanTitle}
                 </h2>
               )}
 
               {formattedDate && (
-                <span className="text-xs font-medium text-sky-600/90 tracking-wide">
+                <span className="text-xs font-medium text-[#A9D6F5] [.light_&]:text-[#2563EB] tracking-wide">
                   {formattedDate}
                 </span>
               )}
 
               {cleanCaption && (
-                <p className="text-xs sm:text-sm text-slate-500 font-light leading-relaxed mt-1 max-w-xl">
+                <p className="text-xs sm:text-sm text-[var(--text-secondary)] font-light leading-relaxed mt-1 max-w-xl">
                   {cleanCaption}
                 </p>
               )}
@@ -462,10 +461,8 @@ export const Lightbox: React.FC<LightboxProps> = ({
 
           {/* Bottom-Center Counter (e.g. 10 / 148) */}
           {totalCount > 0 && currentIndex !== -1 && (
-            <div className="mt-0.5 inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#F5F1E8] border border-[#EAE3D5] text-[11px] sm:text-xs font-semibold text-slate-600 tracking-wider">
-              <span>
-                {currentIndex + 1} / {totalCount}
-              </span>
+            <div className="mt-0.5 text-[11px] sm:text-xs font-semibold text-[var(--text-muted)] tracking-wider tabular-nums">
+              {currentIndex + 1} / {totalCount}
             </div>
           )}
         </div>

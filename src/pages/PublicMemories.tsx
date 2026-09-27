@@ -211,41 +211,41 @@ export const PublicMemories: React.FC<PublicMemoriesProps> = ({
       />
 
       {/* Gallery Controls & Filters */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-6">
+      <div id="memories-gallery" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-6 scroll-mt-16">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           {/* Categories: All / Photos / Videos */}
-          <div className="flex items-center gap-1.5 p-1 bg-white border border-slate-200/80 rounded-2xl shadow-2xs self-start">
+          <div className="flex items-center gap-1.5 p-1 bg-[#0B1D35] [.light_&]:bg-white border border-[var(--border-subtle)] rounded-2xl self-start">
             <button
               onClick={() => setActiveTypeFilter('all')}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition ${
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
                 activeTypeFilter === 'all'
-                  ? 'bg-sky-500 text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                  ? 'btn-night-primary'
+                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[#102642]/60 [.light_&]:hover:bg-slate-100'
               }`}
             >
               All Moments
             </button>
             <button
               onClick={() => setActiveTypeFilter('photo')}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition ${
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer ${
                 activeTypeFilter === 'photo'
-                  ? 'bg-sky-500 text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                  ? 'btn-night-primary'
+                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[#102642]/60 [.light_&]:hover:bg-slate-100'
               }`}
             >
               <ImageIcon className="w-3.5 h-3.5" />
-              Photos ({totalPhotos})
+              <span>Photos ({totalPhotos})</span>
             </button>
             <button
               onClick={() => setActiveTypeFilter('video')}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition ${
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer ${
                 activeTypeFilter === 'video'
-                  ? 'bg-sky-500 text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                  ? 'btn-night-primary'
+                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[#102642]/60 [.light_&]:hover:bg-slate-100'
               }`}
             >
               <Film className="w-3.5 h-3.5" />
-              Videos ({totalVideos})
+              <span>Videos ({totalVideos})</span>
             </button>
           </div>
 
@@ -257,27 +257,33 @@ export const PublicMemories: React.FC<PublicMemoriesProps> = ({
                 <select
                   value={activeAlbumId || ''}
                   onChange={(e) => setActiveAlbumId(e.target.value || null)}
-                  className="appearance-none pl-8 pr-8 py-2 bg-white border border-slate-200/80 rounded-xl text-xs font-medium text-slate-700 shadow-2xs hover:border-sky-300 focus:outline-hidden focus:ring-2 focus:ring-sky-200 transition"
+                  className="appearance-none pl-8 pr-8 py-2 rounded-xl text-xs font-medium btn-night-secondary focus:outline-hidden focus:ring-2 focus:ring-[#6FA8DC]/40 cursor-pointer"
                   aria-label="Filter by album"
                 >
-                  <option value="">All Albums</option>
+                  <option value="" className="bg-[#0B1D35] text-[#F0F7FF] [.light_&]:bg-white [.light_&]:text-slate-800">
+                    All Albums
+                  </option>
                   {albums.map((album) => (
-                    <option key={album.id} value={album.id}>
+                    <option
+                      key={album.id}
+                      value={album.id}
+                      className="bg-[#0B1D35] text-[#F0F7FF] [.light_&]:bg-white [.light_&]:text-slate-800"
+                    >
                       {album.name}
                     </option>
                   ))}
                 </select>
-                <FolderHeart className="w-3.5 h-3.5 text-sky-500 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <FolderHeart className="w-3.5 h-3.5 text-[#6FA8DC] absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               </div>
             )}
 
             {/* Sort Toggle */}
             <button
               onClick={() => setSortOrder(sortOrder === 'newest' ? 'oldest' : 'newest')}
-              className="px-3 py-2 bg-white border border-slate-200/80 rounded-xl text-xs font-medium text-slate-700 shadow-2xs hover:border-sky-300 flex items-center gap-1.5 transition"
+              className="px-3.5 py-2 rounded-xl text-xs font-medium btn-night-secondary flex items-center gap-1.5 cursor-pointer"
               title="Toggle sort direction"
             >
-              <ArrowUpDown className="w-3.5 h-3.5 text-sky-500" />
+              <ArrowUpDown className="w-3.5 h-3.5 text-[#6FA8DC]" />
               <span>{sortOrder === 'newest' ? 'Newest First' : 'Oldest First'}</span>
             </button>
           </div>
@@ -285,16 +291,19 @@ export const PublicMemories: React.FC<PublicMemoriesProps> = ({
 
         {/* Active album banner */}
         {activeAlbumId && (
-          <div className="mt-4 p-3 bg-sky-50/80 border border-sky-100 rounded-xl flex items-center justify-between text-xs text-sky-800">
+          <div className="mt-4 p-3 bg-[#102642]/80 [.light_&]:bg-sky-50/90 border border-[var(--border-subtle)] rounded-xl flex items-center justify-between text-xs text-[var(--text-secondary)]">
             <span>
-              Showing memories from album: <strong>{albumMap.get(activeAlbumId) || 'Album'}</strong>
+              Showing memories from album:{' '}
+              <strong className="text-[var(--text-primary)]">
+                {albumMap.get(activeAlbumId) || 'Album'}
+              </strong>
             </span>
             <button
               onClick={() => {
                 setActiveAlbumId(null);
                 onClearAlbumFilter?.();
               }}
-              className="font-semibold text-sky-600 hover:text-sky-800 underline ml-2"
+              className="font-semibold text-[#A9D6F5] [.light_&]:text-[#2563EB] hover:underline ml-2 cursor-pointer"
             >
               Clear filter
             </button>
@@ -310,13 +319,13 @@ export const PublicMemories: React.FC<PublicMemoriesProps> = ({
             {[...Array(8)].map((_, i) => (
               <div
                 key={i}
-                className="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-xs animate-pulse"
+                className="night-card rounded-2xl overflow-hidden animate-pulse"
               >
-                <div className="aspect-4/3 bg-slate-200" />
+                <div className="aspect-4/3 bg-[#0B1D35] [.light_&]:bg-slate-200" />
                 <div className="p-4 space-y-2">
-                  <div className="h-3 bg-slate-200 rounded-md w-1/3" />
-                  <div className="h-4 bg-slate-200 rounded-md w-3/4" />
-                  <div className="h-3 bg-slate-200 rounded-md w-1/2" />
+                  <div className="h-3 bg-[#153052] [.light_&]:bg-slate-200 rounded-md w-1/3" />
+                  <div className="h-4 bg-[#153052] [.light_&]:bg-slate-200 rounded-md w-3/4" />
+                  <div className="h-3 bg-[#153052] [.light_&]:bg-slate-200 rounded-md w-1/2" />
                 </div>
               </div>
             ))}
@@ -334,18 +343,18 @@ export const PublicMemories: React.FC<PublicMemoriesProps> = ({
           </div>
         ) : allMemories.length > 0 ? (
           /* Filtered empty state */
-          <div className="my-16 max-w-md mx-auto text-center p-8 bg-white/70 rounded-3xl border border-sky-100 shadow-sm backdrop-blur-xs animate-fade-in">
-            <div className="w-14 h-14 rounded-2xl bg-sky-50 text-sky-500 flex items-center justify-center mx-auto mb-3">
+          <div className="my-16 max-w-md mx-auto text-center p-8 night-card rounded-3xl animate-fade-in">
+            <div className="w-14 h-14 rounded-2xl bg-[#0B1D35] [.light_&]:bg-sky-50 border border-[var(--border-subtle)] text-[#A9D6F5] [.light_&]:text-sky-600 flex items-center justify-center mx-auto mb-3">
               {activeTypeFilter === 'video' ? (
                 <Film className="w-7 h-7" />
               ) : (
                 <ImageIcon className="w-7 h-7" />
               )}
             </div>
-            <h3 className="font-serif text-lg font-bold text-slate-800">
+            <h3 className="font-serif text-lg font-bold text-[var(--text-primary)]">
               No {activeTypeFilter === 'video' ? 'videos' : activeTypeFilter === 'photo' ? 'photos' : 'moments'} found
             </h3>
-            <p className="mt-1.5 text-xs sm:text-sm text-slate-500 font-light">
+            <p className="mt-1.5 text-xs sm:text-sm text-[var(--text-secondary)] font-light">
               There are currently no items matching your selected filter.
             </p>
             <button
@@ -353,26 +362,26 @@ export const PublicMemories: React.FC<PublicMemoriesProps> = ({
                 setActiveTypeFilter('all');
                 setActiveAlbumId(null);
               }}
-              className="mt-5 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold shadow-xs transition"
+              className="mt-5 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl btn-night-primary text-xs cursor-pointer"
             >
               <span>View All Moments</span>
             </button>
           </div>
         ) : (
-          /* Initial empty state as requested */
-          <div className="my-16 max-w-md mx-auto text-center p-8 bg-white/70 rounded-3xl border border-sky-100 shadow-sm backdrop-blur-xs animate-fade-in">
+          /* Initial empty state */
+          <div className="my-16 max-w-md mx-auto text-center p-8 night-card rounded-3xl animate-fade-in">
             <div className="flex justify-center mb-3">
-              <TeddyBearToy className="w-20 h-20 animate-baby-float drop-shadow-xs" />
+              <TeddyBearToy className="w-20 h-20 animate-moon-float" />
             </div>
-            <h3 className="font-serif text-xl font-bold text-slate-800">
+            <h3 className="font-serif text-xl font-bold text-[var(--text-primary)]">
               Your little memories are waiting here.
             </h3>
-            <p className="mt-2 text-sm text-slate-500 font-light leading-relaxed">
+            <p className="mt-2 text-sm text-[var(--text-secondary)] font-light leading-relaxed">
               Start adding photos and videos from Family Admin to fill this album with precious moments.
             </p>
             <button
               onClick={() => navigate('/familyadmin/upload')}
-              className="mt-6 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-sm font-semibold shadow-md shadow-sky-200 transition"
+              className="mt-6 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl btn-night-primary text-sm cursor-pointer"
             >
               <PlusCircle className="w-4 h-4" />
               <span>Add First Memory</span>

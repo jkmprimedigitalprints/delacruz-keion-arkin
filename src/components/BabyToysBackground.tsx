@@ -1,339 +1,219 @@
 import React from 'react';
 
 /**
- * High-quality, delightful SVG illustrations of baby toys and nursery accents.
- * Designed with soft pastel baby colors (#7DD3FC, #38BDF8, #FDE047, #FDBA74, #C4B5FD, #FBCFE8)
- * for Keion Arkin's baby boy album.
+ * Minimal, peaceful Baby Night Sky SVG motifs:
+ * - Soft glowing Crescent Moon
+ * - Subtle drifting Night Clouds
+ * - Twinkling Stars & Sparkles
+ * - Delicate pastel pink (#F3C9D9) & baby blue (#A9D6F5) keepsake accents
  */
 
-export const TeddyBearToy: React.FC<{ className?: string }> = ({ className = 'w-16 h-16' }) => (
-  <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
-    {/* Left Ear */}
-    <circle cx="28" cy="28" r="14" fill="#F6D5A6" stroke="#D97706" strokeWidth="2.5" />
-    <circle cx="28" cy="28" r="8" fill="#FDE68A" />
-    {/* Right Ear */}
-    <circle cx="72" cy="28" r="14" fill="#F6D5A6" stroke="#D97706" strokeWidth="2.5" />
-    <circle cx="72" cy="28" r="8" fill="#FDE68A" />
-    {/* Body */}
-    <ellipse cx="50" cy="72" rx="26" ry="24" fill="#F6D5A6" stroke="#D97706" strokeWidth="2.5" />
-    <ellipse cx="50" cy="72" rx="16" ry="15" fill="#FEF3C7" />
-    {/* Feet / Paws */}
-    <ellipse cx="28" cy="88" rx="11" ry="8" fill="#F6D5A6" stroke="#D97706" strokeWidth="2" />
-    <circle cx="28" cy="88" r="5" fill="#BAE6FD" />
-    <ellipse cx="72" cy="88" rx="11" ry="8" fill="#F6D5A6" stroke="#D97706" strokeWidth="2" />
-    <circle cx="72" cy="88" r="5" fill="#BAE6FD" />
-    {/* Head */}
-    <circle cx="50" cy="46" r="26" fill="#F6D5A6" stroke="#D97706" strokeWidth="2.5" />
-    {/* Eyes */}
-    <circle cx="41" cy="42" r="3.2" fill="#1E293B" />
-    <circle cx="42" cy="41" r="1" fill="#FFFFFF" />
-    <circle cx="59" cy="42" r="3.2" fill="#1E293B" />
-    <circle cx="60" cy="41" r="1" fill="#FFFFFF" />
-    {/* Snout / Muzzle */}
-    <ellipse cx="50" cy="52" rx="12" ry="9" fill="#FEF3C7" stroke="#D97706" strokeWidth="1.5" />
-    {/* Nose & Smile */}
-    <path d="M46 49 Q50 51 54 49 Q50 54 46 49 Z" fill="#92400E" />
-    <path d="M50 52 L50 56 M47 56 Q50 59 53 56" stroke="#92400E" strokeWidth="1.5" strokeLinecap="round" />
-    {/* Rosy Cheeks */}
-    <circle cx="34" cy="50" r="4" fill="#FCA5A5" opacity="0.6" />
-    <circle cx="66" cy="50" r="4" fill="#FCA5A5" opacity="0.6" />
-    {/* Cute Baby Bowtie */}
-    <path d="M42 66 L50 70 L42 74 Z" fill="#38BDF8" />
-    <path d="M58 66 L50 70 L58 74 Z" fill="#38BDF8" />
-    <circle cx="50" cy="70" r="3" fill="#0284C7" />
-  </svg>
-);
-
-export const RockingHorseToy: React.FC<{ className?: string }> = ({ className = 'w-20 h-20' }) => (
-  <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
-    {/* Rocker Base Curved Runner */}
+export const CrescentMoonSvg: React.FC<{ className?: string }> = ({ className = 'w-24 h-24' }) => (
+  <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+    <defs>
+      <radialGradient id="moonHalo" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stopColor="#D9ECFF" stopOpacity="0.28" />
+        <stop offset="65%" stopColor="#A9D6F5" stopOpacity="0.08" />
+        <stop offset="100%" stopColor="#071426" stopOpacity="0" />
+      </radialGradient>
+      <linearGradient id="moonCrescentGrad" x1="25" y1="20" x2="90" y2="95" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stopColor="#FFFDF9" />
+        <stop offset="55%" stopColor="#E6F3FF" />
+        <stop offset="100%" stopColor="#A9D6F5" />
+      </linearGradient>
+    </defs>
+    {/* Subtle ambient moon glow */}
+    <circle cx="60" cy="60" r="54" fill="url(#moonHalo)" />
+    {/* Minimalist crescent moon */}
     <path
-      d="M10 82 Q50 96 90 82"
-      stroke="#0284C7"
-      strokeWidth="5"
-      strokeLinecap="round"
-      fill="none"
+      d="M74 26C56.5 28.8 43 43.9 43 62.2C43 82.4 59.4 98.8 79.6 98.8C85.2 98.8 90.5 97.5 95.2 95.2C88.1 101.8 78.6 105.8 68.1 105.8C46.1 105.8 28.2 87.9 28.2 65.9C28.2 45.9 42.9 29.3 62.1 26.4C66.1 25.8 70.1 25.7 74 26Z"
+      fill="url(#moonCrescentGrad)"
     />
-    {/* Rocker Posts */}
-    <line x1="32" y1="68" x2="26" y2="86" stroke="#38BDF8" strokeWidth="3.5" strokeLinecap="round" />
-    <line x1="68" y1="68" x2="74" y2="86" stroke="#38BDF8" strokeWidth="3.5" strokeLinecap="round" />
-    {/* Horse Body */}
-    <ellipse cx="50" cy="62" rx="20" ry="11" fill="#BAE6FD" stroke="#0284C7" strokeWidth="2.5" />
-    {/* Horse Neck & Head */}
+    {/* Tiny companion star near the crescent tip */}
     <path
-      d="M58 62 L66 42 Q68 34 76 34 Q82 35 80 42 L72 52 L66 62 Z"
-      fill="#BAE6FD"
-      stroke="#0284C7"
-      strokeWidth="2.5"
-      strokeLinejoin="round"
-    />
-    {/* Horse Ear */}
-    <polygon points="72,32 75,24 78,32" fill="#38BDF8" stroke="#0284C7" strokeWidth="1.5" />
-    {/* Horse Mane */}
-    <path
-      d="M65 37 Q61 39 63 43 Q59 45 61 49 Q57 51 59 55"
-      stroke="#F59E0B"
-      strokeWidth="3.5"
-      strokeLinecap="round"
-      fill="none"
-    />
-    {/* Eye */}
-    <circle cx="75" cy="38" r="1.8" fill="#1E293B" />
-    {/* Cute Saddle */}
-    <path d="M43 55 Q50 60 57 55 L55 64 Q50 66 45 64 Z" fill="#F43F5E" />
-    <circle cx="50" cy="61" r="2" fill="#FDE047" />
-    {/* Tail */}
-    <path d="M30 60 Q20 62 24 70" stroke="#F59E0B" strokeWidth="3.5" strokeLinecap="round" fill="none" />
-  </svg>
-);
-
-export const BabyBlocksToy: React.FC<{ className?: string }> = ({ className = 'w-16 h-16' }) => (
-  <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
-    {/* Block A (Bottom Left) */}
-    <g transform="translate(10, 48)">
-      <rect x="0" y="0" width="38" height="38" rx="6" fill="#60A5FA" stroke="#2563EB" strokeWidth="2" />
-      <rect x="4" y="4" width="30" height="30" rx="4" fill="#93C5FD" opacity="0.6" />
-      <text x="19" y="27" fontSize="22" fontWeight="bold" fontFamily="sans-serif" fill="#FFFFFF" textAnchor="middle">
-        A
-      </text>
-    </g>
-    {/* Block B (Bottom Right) */}
-    <g transform="translate(52, 48)">
-      <rect x="0" y="0" width="38" height="38" rx="6" fill="#F472B6" stroke="#DB2777" strokeWidth="2" />
-      <rect x="4" y="4" width="30" height="30" rx="4" fill="#FBCFE8" opacity="0.6" />
-      <text x="19" y="27" fontSize="22" fontWeight="bold" fontFamily="sans-serif" fill="#FFFFFF" textAnchor="middle">
-        B
-      </text>
-    </g>
-    {/* Block C (Top Center) */}
-    <g transform="translate(31, 10)">
-      <rect x="0" y="0" width="38" height="38" rx="6" fill="#FBBF24" stroke="#D97706" strokeWidth="2" />
-      <rect x="4" y="4" width="30" height="30" rx="4" fill="#FDE68A" opacity="0.6" />
-      <text x="19" y="27" fontSize="22" fontWeight="bold" fontFamily="sans-serif" fill="#FFFFFF" textAnchor="middle">
-        C
-      </text>
-    </g>
-  </svg>
-);
-
-export const BabyRattleToy: React.FC<{ className?: string }> = ({ className = 'w-14 h-14' }) => (
-  <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
-    {/* Handle Stick */}
-    <rect x="46" y="45" width="8" height="38" rx="4" fill="#FDE68A" stroke="#D97706" strokeWidth="2" />
-    {/* Bottom Ring */}
-    <circle cx="50" cy="85" r="9" fill="none" stroke="#38BDF8" strokeWidth="5" />
-    <circle cx="50" cy="85" r="3" fill="#F472B6" />
-    {/* Decorative Bow */}
-    <path d="M42 46 Q50 50 58 46 Q50 42 42 46 Z" fill="#F43F5E" />
-    {/* Rattle Ball Outer Ring */}
-    <circle cx="50" cy="28" r="22" fill="#E0F2FE" stroke="#0284C7" strokeWidth="3" />
-    {/* Inner Colorful Beads */}
-    <circle cx="44" cy="24" r="5" fill="#F472B6" />
-    <circle cx="56" cy="22" r="5" fill="#38BDF8" />
-    <circle cx="50" cy="32" r="5.5" fill="#FBBF24" />
-    {/* Shiny Reflection */}
-    <path d="M38 18 Q46 12 56 14" stroke="#FFFFFF" strokeWidth="2.5" strokeLinecap="round" fill="none" />
-  </svg>
-);
-
-export const RubberDuckyToy: React.FC<{ className?: string }> = ({ className = 'w-14 h-14' }) => (
-  <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
-    {/* Water ripples */}
-    <path d="M14 82 Q30 86 50 82 Q70 86 86 82" stroke="#38BDF8" strokeWidth="3" strokeLinecap="round" />
-    {/* Body */}
-    <ellipse cx="48" cy="62" rx="28" ry="18" fill="#FACC15" stroke="#CA8A04" strokeWidth="2.5" />
-    {/* Tail Feathers Upward */}
-    <path d="M22 62 Q16 52 24 46 Q28 54 32 58 Z" fill="#FACC15" stroke="#CA8A04" strokeWidth="2" />
-    {/* Wing */}
-    <ellipse cx="46" cy="64" rx="12" ry="8" fill="#FDE047" stroke="#CA8A04" strokeWidth="1.5" />
-    {/* Head */}
-    <circle cx="68" cy="42" r="16" fill="#FACC15" stroke="#CA8A04" strokeWidth="2.5" />
-    {/* Eye */}
-    <circle cx="73" cy="38" r="2.8" fill="#1E293B" />
-    <circle cx="74" cy="37" r="1" fill="#FFFFFF" />
-    {/* Beak */}
-    <path d="M82 42 Q94 44 84 49 Q80 48 81 44 Z" fill="#FB923C" stroke="#EA580C" strokeWidth="1.5" />
-    {/* Rosy Cheek */}
-    <circle cx="68" cy="46" r="3.5" fill="#FCA5A5" opacity="0.6" />
-  </svg>
-);
-
-export const BabyBottleToy: React.FC<{ className?: string }> = ({ className = 'w-14 h-14' }) => (
-  <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
-    {/* Silicone Nipple */}
-    <path d="M42 22 Q50 10 58 22 Z" fill="#FDE68A" stroke="#D97706" strokeWidth="1.8" />
-    {/* Screw Ring Collar */}
-    <rect x="36" y="22" width="28" height="8" rx="3" fill="#38BDF8" stroke="#0284C7" strokeWidth="2" />
-    {/* Bottle Body */}
-    <rect x="34" y="30" width="32" height="52" rx="6" fill="#F0F9FF" stroke="#0284C7" strokeWidth="2.5" />
-    {/* Milk level */}
-    <rect x="36" y="46" width="28" height="34" rx="4" fill="#FFFFFF" opacity="0.9" />
-    {/* Measurement lines */}
-    <line x1="40" y1="52" x2="48" y2="52" stroke="#38BDF8" strokeWidth="2" strokeLinecap="round" />
-    <line x1="40" y1="60" x2="52" y2="60" stroke="#38BDF8" strokeWidth="2" strokeLinecap="round" />
-    <line x1="40" y1="68" x2="48" y2="68" stroke="#38BDF8" strokeWidth="2" strokeLinecap="round" />
-    {/* Heart accent on bottle */}
-    <path d="M53 72 Q56 70 59 72 Q62 75 56 80 Q50 75 53 72 Z" fill="#38BDF8" />
-  </svg>
-);
-
-export const PacifierToy: React.FC<{ className?: string }> = ({ className = 'w-12 h-12' }) => (
-  <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
-    {/* Teat */}
-    <path d="M42 36 Q50 20 58 36 Z" fill="#FDE68A" stroke="#D97706" strokeWidth="2" />
-    {/* Shield curved plate */}
-    <ellipse cx="50" cy="46" rx="26" ry="14" fill="#38BDF8" stroke="#0284C7" strokeWidth="2.5" />
-    {/* Ventilation Holes */}
-    <circle cx="36" cy="46" r="3.5" fill="#FFFFFF" />
-    <circle cx="64" cy="46" r="3.5" fill="#FFFFFF" />
-    {/* Knob Button */}
-    <circle cx="50" cy="52" r="8" fill="#BAE6FD" stroke="#0284C7" strokeWidth="2" />
-    {/* Handle Ring */}
-    <path
-      d="M38 56 Q50 76 62 56"
-      stroke="#0284C7"
-      strokeWidth="4"
-      strokeLinecap="round"
-      fill="none"
+      d="M84 34L85.4 37.6L89 39L85.4 40.4L84 44L82.6 40.4L79 39L82.6 37.6L84 34Z"
+      fill="#D9ECFF"
+      opacity="0.8"
     />
   </svg>
 );
 
-export const BabyCloudToy: React.FC<{ className?: string }> = ({ className = 'w-16 h-16' }) => (
-  <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
-    {/* Puffy Cloud */}
+export const SoftNightCloudSvg: React.FC<{ className?: string }> = ({ className = 'w-36 h-16' }) => (
+  <svg viewBox="0 0 200 84" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
     <path
-      d="M26 62 Q16 62 16 52 Q16 42 26 40 Q28 26 42 26 Q54 26 58 34 Q64 30 72 32 Q82 34 82 46 Q90 48 90 56 Q90 62 80 62 Z"
-      fill="#FFFFFF"
-      stroke="#BAE6FD"
-      strokeWidth="2.5"
+      d="M42 68H158C171.255 68 182 57.2548 182 44C182 31.652 172.677 21.4848 160.685 20.1469C155.146 8.8095 143.489 1 130 1C114.643 1 101.663 11.1422 97.435 25.0757C92.811 22.4819 87.479 21 81.8 21C65.458 21 52.094 33.7689 51.063 49.865C49.423 49.303 47.664 49 45.8 49C36.521 49 29 56.521 29 65.8C29 66.55 29.049 67.288 29.144 68H42Z"
+      fill="currentColor"
     />
-    {/* Sweet Sleeping Eyes */}
-    <path d="M42 46 Q46 50 50 46" stroke="#0284C7" strokeWidth="2" strokeLinecap="round" fill="none" />
-    <path d="M58 46 Q62 50 66 46" stroke="#0284C7" strokeWidth="2" strokeLinecap="round" fill="none" />
-    {/* Rosy Cheeks */}
-    <circle cx="38" cy="48" r="3" fill="#FCA5A5" opacity="0.7" />
-    <circle cx="70" cy="48" r="3" fill="#FCA5A5" opacity="0.7" />
-    {/* Little Smile */}
-    <path d="M52 51 Q54 54 56 51" stroke="#0284C7" strokeWidth="1.5" strokeLinecap="round" fill="none" />
   </svg>
 );
 
-export const BabyBalloonsToy: React.FC<{ className?: string }> = ({ className = 'w-16 h-20' }) => (
-  <svg viewBox="0 0 100 120" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
-    {/* Balloon Strings */}
-    <path d="M38 60 Q45 80 50 110" stroke="#94A3B8" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-    <path d="M50 52 Q50 80 50 110" stroke="#94A3B8" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-    <path d="M62 60 Q55 80 50 110" stroke="#94A3B8" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-    {/* String Tie Bow */}
-    <circle cx="50" cy="110" r="3" fill="#38BDF8" />
-    {/* Balloon 1: Soft Mint/Green (Left) */}
-    <g transform="translate(18, 18)">
-      <ellipse cx="20" cy="24" rx="14" ry="18" fill="#6EE7B7" stroke="#059669" strokeWidth="1.5" />
-      <polygon points="18,41 22,41 20,44" fill="#059669" />
-      <path d="M14 14 Q18 10 22 12" stroke="#FFFFFF" strokeWidth="1.8" strokeLinecap="round" fill="none" opacity="0.7" />
-    </g>
-    {/* Balloon 3: Pastel Yellow/Cream (Right) */}
-    <g transform="translate(48, 18)">
-      <ellipse cx="20" cy="24" rx="14" ry="18" fill="#FDE047" stroke="#D97706" strokeWidth="1.5" />
-      <polygon points="18,41 22,41 20,44" fill="#D97706" />
-      <path d="M14 14 Q18 10 22 12" stroke="#FFFFFF" strokeWidth="1.8" strokeLinecap="round" fill="none" opacity="0.7" />
-    </g>
-    {/* Balloon 2: Sky Blue (Center Foreground) */}
-    <g transform="translate(33, 4)">
-      <ellipse cx="17" cy="26" rx="17" ry="22" fill="#38BDF8" stroke="#0284C7" strokeWidth="2" />
-      <polygon points="14,47 20,47 17,50" fill="#0284C7" />
-      <path d="M11 15 Q17 9 22 12" stroke="#FFFFFF" strokeWidth="2.2" strokeLinecap="round" fill="none" opacity="0.8" />
-    </g>
+export const TinySparkleSvg: React.FC<{ className?: string }> = ({ className = 'w-3.5 h-3.5' }) => (
+  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+    <path
+      d="M12 2L13.85 9.15L21 11L13.85 12.85L12 20L10.15 12.85L3 11L10.15 9.15L12 2Z"
+      fill="currentColor"
+    />
   </svg>
 );
 
-export const BabyStarCluster: React.FC<{ className?: string }> = ({ className = 'w-10 h-10' }) => (
-  <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
-    {/* Big Star */}
+export const TinyHeartSvg: React.FC<{ className?: string }> = ({ className = 'w-3.5 h-3.5' }) => (
+  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
     <path
-      d="M50 10 L58 35 L85 35 L63 51 L71 76 L50 60 L29 76 L37 51 L15 35 L42 35 Z"
-      fill="#FBBF24"
-      stroke="#D97706"
-      strokeWidth="2"
-      strokeLinejoin="round"
+      d="M12 20.25C12 20.25 4.5 15.2 4.5 9.35C4.5 6.95 6.4 5 8.75 5C10.18 5 11.45 5.72 12 6.82C12.55 5.72 13.82 5 15.25 5C17.6 5 19.5 6.95 19.5 9.35C19.5 15.2 12 20.25 12 20.25Z"
+      fill="currentColor"
     />
-    <circle cx="50" cy="46" r="3" fill="#FFFFFF" opacity="0.8" />
   </svg>
 );
 
 /**
- * Ambient floating baby toys background for Hero section.
- * Positioned on desktop and tablet to gently frame the baby name, quote, and stats.
+ * Keepsake Moon & Stars Emblem (used in empty states)
+ */
+export const TeddyBearToy: React.FC<{ className?: string }> = ({ className = 'w-16 h-16' }) => (
+  <CrescentMoonSvg className={className} />
+);
+
+/**
+ * Hero Night Sky Overlay:
+ * - Soft glowing crescent moon behind/beside the hero content
+ * - 3 subtle drifting night clouds
+ * - Staggered twinkling stars (opacity 0.25 - 0.75)
+ * - 2 delicate pastel baby-pink (#F3C9D9) hearts
  */
 export const HeroBabyToysOverlay: React.FC = () => {
   return (
-    <div className="absolute inset-0 pointer-events-none overflow-hidden select-none" aria-hidden="true">
-      {/* Top Left: Floating Balloons */}
-      <div className="absolute -top-2 left-3 sm:left-8 lg:left-16 animate-baby-float opacity-80 hover:opacity-100 transition-opacity">
-        <BabyBalloonsToy className="w-16 h-20 sm:w-20 sm:h-26 drop-shadow-xs" />
+    <div
+      className="hero-anim-sky absolute inset-0 pointer-events-none overflow-hidden select-none"
+      aria-hidden="true"
+    >
+      {/* Soft radial night-sky illumination */}
+      <div
+        className="absolute -top-20 left-1/2 -translate-x-1/2 w-[540px] sm:w-[760px] h-[340px] rounded-full blur-3xl opacity-35"
+        style={{
+          background:
+            'radial-gradient(circle, rgba(111,168,220,0.28) 0%, rgba(16,38,66,0.08) 65%, transparent 100%)',
+        }}
+      />
+
+      {/* Elegant Crescent Moon (Top Right-ish of Hero, never blocking text) */}
+      <div className="absolute top-4 right-4 sm:top-7 sm:right-12 lg:right-24 animate-moon-float opacity-85">
+        <CrescentMoonSvg className="w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32" />
       </div>
 
-      {/* Mid Left: Cute Teddy Bear */}
-      <div className="absolute top-28 left-4 sm:left-10 lg:left-24 animate-baby-float-reverse opacity-85 hover:opacity-100 transition-opacity">
-        <TeddyBearToy className="w-16 h-16 sm:w-20 sm:h-20 drop-shadow-xs" />
+      {/* Subtle Cloud 1 (Left upper horizon) */}
+      <div className="absolute top-14 left-2 sm:left-10 lg:left-20 animate-cloud-drift text-[#163358]/55 dark:text-[#163358]/55">
+        <SoftNightCloudSvg className="w-28 h-12 sm:w-40 sm:h-18" />
       </div>
 
-      {/* Bottom Left: ABC Toy Blocks */}
-      <div className="absolute bottom-4 left-6 sm:left-14 lg:left-28 animate-baby-rock opacity-85 hover:opacity-100 transition-opacity">
-        <BabyBlocksToy className="w-14 h-14 sm:w-18 sm:h-18 drop-shadow-xs" />
+      {/* Subtle Cloud 2 (Right lower horizon) */}
+      <div className="absolute bottom-8 right-3 sm:right-14 lg:right-28 animate-cloud-drift-reverse text-[#153052]/50">
+        <SoftNightCloudSvg className="w-24 h-10 sm:w-36 sm:h-16" />
       </div>
 
-      {/* Top Right: Sleeping Cloud with Moon/Star */}
-      <div className="absolute top-2 right-4 sm:right-10 lg:right-20 animate-baby-float-slow opacity-85 hover:opacity-100 transition-opacity">
-        <BabyCloudToy className="w-18 h-18 sm:w-24 sm:h-24 drop-shadow-xs" />
+      {/* Subtle Cloud 3 (Desktop soft mid-left cloud) */}
+      <div className="hidden md:block absolute bottom-14 left-24 animate-cloud-drift text-[#132C4C]/45">
+        <SoftNightCloudSvg className="w-32 h-14" />
       </div>
 
-      {/* Mid Right: Rocking Horse */}
-      <div className="absolute top-32 right-4 sm:right-10 lg:right-24 animate-baby-rock opacity-85 hover:opacity-100 transition-opacity">
-        <RockingHorseToy className="w-16 h-16 sm:w-22 sm:h-22 drop-shadow-xs" />
+      {/* Staggered Twinkling Stars */}
+      <div
+        className="absolute top-10 left-[14%] w-1.5 h-1.5 rounded-full bg-[#D9ECFF] animate-night-twinkle"
+        style={{ animationDelay: '0.2s' }}
+      />
+      <div
+        className="absolute top-24 left-[26%] w-1 h-1 rounded-full bg-[#A9D6F5] animate-night-twinkle"
+        style={{ animationDelay: '1.9s' }}
+      />
+      <div
+        className="absolute top-16 right-[28%] w-1.5 h-1.5 rounded-full bg-[#D9ECFF] animate-night-twinkle"
+        style={{ animationDelay: '3.1s' }}
+      />
+      <div
+        className="hidden sm:block absolute bottom-20 left-[18%] w-1.5 h-1.5 rounded-full bg-[#A9D6F5] animate-night-twinkle"
+        style={{ animationDelay: '2.4s' }}
+      />
+      <div
+        className="hidden sm:block absolute bottom-24 right-[20%] w-1 h-1 rounded-full bg-[#D9ECFF] animate-night-twinkle"
+        style={{ animationDelay: '4.2s' }}
+      />
+
+      {/* Delicate Sparkles */}
+      <div
+        className="absolute top-12 left-[20%] text-[#A9D6F5] animate-night-sparkle"
+        style={{ animationDelay: '0.8s' }}
+      >
+        <TinySparkleSvg className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+      </div>
+      <div
+        className="absolute bottom-16 right-[16%] text-[#D9ECFF] animate-night-sparkle"
+        style={{ animationDelay: '2.7s' }}
+      >
+        <TinySparkleSvg className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
       </div>
 
-      {/* Bottom Right: Baby Rattle & Duck */}
-      <div className="absolute bottom-5 right-6 sm:right-14 lg:right-32 flex items-center gap-2 animate-baby-float opacity-85 hover:opacity-100 transition-opacity">
-        <BabyRattleToy className="w-12 h-12 sm:w-16 sm:h-16 drop-shadow-xs" />
-        <RubberDuckyToy className="w-10 h-10 sm:w-14 sm:h-14 hidden sm:block drop-shadow-xs" />
+      {/* Two subtle pastel baby-pink (#F3C9D9) hearts */}
+      <div
+        className="hidden sm:block absolute top-28 left-[12%] text-[#F3C9D9] animate-heart-float"
+        style={{ animationDelay: '1.2s' }}
+      >
+        <TinyHeartSvg className="w-3 h-3" />
       </div>
-
-      {/* Twinkling ambient baby stars */}
-      <div className="absolute top-14 left-1/4 animate-baby-twinkle opacity-40">
-        <BabyStarCluster className="w-5 h-5 sm:w-7 sm:h-7" />
-      </div>
-      <div className="absolute top-20 right-1/4 animate-baby-twinkle opacity-50" style={{ animationDelay: '1.5s' }}>
-        <BabyStarCluster className="w-4 h-4 sm:w-6 sm:h-6" />
-      </div>
-      <div className="absolute bottom-16 left-1/3 animate-baby-twinkle opacity-40" style={{ animationDelay: '2.5s' }}>
-        <BabyStarCluster className="w-4 h-4" />
+      <div
+        className="hidden sm:block absolute bottom-20 right-[12%] text-[#F3C9D9] animate-heart-float"
+        style={{ animationDelay: '3.6s' }}
+      >
+        <TinyHeartSvg className="w-2.5 h-2.5" />
       </div>
     </div>
   );
 };
 
 /**
- * Ambient watermarks floating subtly down page margins on desktop screens.
+ * Calm, unobtrusive page-wide night-sky starfield background.
+ * Keeps photos and videos as the clear focal point.
  */
 export const PageBabyMotifBackground: React.FC = () => {
   return (
-    <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden select-none opacity-25" aria-hidden="true">
-      {/* Left Margin Scattered Toys */}
-      <div className="absolute top-1/3 -left-3 animate-baby-float-slow">
-        <PacifierToy className="w-12 h-12" />
-      </div>
-      <div className="absolute top-2/3 -left-2 animate-baby-rock">
-        <RubberDuckyToy className="w-14 h-14" />
+    <div
+      className="fixed inset-0 pointer-events-none -z-10 overflow-hidden select-none"
+      aria-hidden="true"
+    >
+      {/* Subtle top-to-bottom night sky depth gradient */}
+      <div
+        className="
+          absolute inset-0 opacity-90
+          bg-[radial-gradient(ellipse_at_top,_rgba(16,38,66,0.55)_0%,_transparent_70%)]
+        "
+      />
+
+      {/* Quiet ambient stars along outer margins */}
+      <div
+        className="absolute top-[18%] left-[6%] w-1 h-1 rounded-full bg-[#A9D6F5] animate-night-twinkle"
+        style={{ animationDelay: '0.5s' }}
+      />
+      <div
+        className="absolute top-[46%] left-[4%] w-1.5 h-1.5 rounded-full bg-[#D9ECFF] animate-night-twinkle"
+        style={{ animationDelay: '2.8s' }}
+      />
+      <div
+        className="hidden sm:block absolute top-[74%] left-[7%] text-[#6FA8DC] animate-night-sparkle"
+        style={{ animationDelay: '1.4s' }}
+      >
+        <TinySparkleSvg className="w-2.5 h-2.5" />
       </div>
 
-      {/* Right Margin Scattered Toys */}
-      <div className="absolute top-1/2 -right-3 animate-baby-float">
-        <BabyBottleToy className="w-12 h-12" />
-      </div>
-      <div className="absolute top-3/4 -right-2 animate-baby-float-reverse">
-        <BabyBlocksToy className="w-12 h-12" />
+      <div
+        className="absolute top-[28%] right-[5%] w-1 h-1 rounded-full bg-[#D9ECFF] animate-night-twinkle"
+        style={{ animationDelay: '1.7s' }}
+      />
+      <div
+        className="hidden sm:block absolute top-[62%] right-[6%] w-1.5 h-1.5 rounded-full bg-[#A9D6F5] animate-night-twinkle"
+        style={{ animationDelay: '3.9s' }}
+      />
+      <div
+        className="hidden md:block absolute top-[82%] right-[8%] text-[#F3C9D9] animate-heart-float"
+        style={{ animationDelay: '2.2s' }}
+      >
+        <TinyHeartSvg className="w-2.5 h-2.5" />
       </div>
     </div>
   );

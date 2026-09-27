@@ -118,8 +118,8 @@ export default function App() {
 
   return (
     <ToastProvider>
-      <div className="min-h-screen bg-[#F8FAFC] text-slate-800 flex flex-col font-sans relative overflow-x-hidden">
-        {/* Subtle page-wide floating baby toy motifs */}
+      <div className="min-h-screen night-canvas flex flex-col font-sans relative overflow-x-hidden">
+        {/* Subtle page-wide baby night sky starfield */}
         <PageBabyMotifBackground />
 
         {/* Navigation Bar */}
@@ -135,27 +135,27 @@ export default function App() {
         </div>
 
         {/* Footer */}
-        <footer className="mt-auto border-t border-slate-200/80 bg-white/60 py-6 text-center text-xs text-slate-400">
+        <footer className="mt-auto border-t border-[var(--border-subtle)] bg-[#0B1D35]/75 [.light_&]:bg-white/75 py-6 text-center text-xs text-[var(--text-muted)]">
           <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
             <p className="font-light">
-              Made with love for baby boy's precious moments • Built with Supabase Realtime Sync
+              Made with love for Keion Arkin's precious moments • Realtime Family Keepsake
             </p>
             <div className="flex items-center gap-4">
               <button
                 onClick={() => navigate('/memories')}
-                className="hover:text-slate-600 transition"
+                className="hover:text-[var(--text-primary)] transition cursor-pointer"
               >
                 Memories
               </button>
               <button
                 onClick={() => navigate('/albums')}
-                className="hover:text-slate-600 transition"
+                className="hover:text-[var(--text-primary)] transition cursor-pointer"
               >
                 Albums
               </button>
               <button
                 onClick={() => navigate('/familyadmin')}
-                className="hover:text-sky-600 font-medium transition"
+                className="text-[#A9D6F5] [.light_&]:text-[#2563EB] hover:underline font-medium transition cursor-pointer"
               >
                 Family Admin
               </button>

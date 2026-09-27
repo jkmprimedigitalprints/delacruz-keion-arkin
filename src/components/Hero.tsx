@@ -1,7 +1,7 @@
 import React from 'react';
-import { Calendar, Heart, Sparkles } from 'lucide-react';
+import { Calendar, Heart, ArrowDown } from 'lucide-react';
 import { BabySettings } from '../types';
-import { HeroBabyToysOverlay } from './BabyToysBackground';
+import { HeroBabyToysOverlay, TinySparkleSvg } from './BabyToysBackground';
 
 interface HeroProps {
   settings: BabySettings;
@@ -56,75 +56,127 @@ export const Hero: React.FC<HeroProps> = ({
 }) => {
   const ageText = settings.birthDate ? calculateBabyAge(settings.birthDate) : '';
 
-  return (
-    <section className="relative overflow-hidden pt-8 pb-12 sm:pt-12 sm:pb-16 bg-gradient-to-b from-sky-50/70 via-[#F8FAFC] to-[#F8FAFC] border-b border-sky-100/50">
-      {/* Subtle background ambient glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-64 bg-radial from-sky-200/30 to-transparent blur-3xl pointer-events-none -z-10" />
+  const handleScrollToMemories = () => {
+    const galleryEl = document.getElementById('memories-gallery');
+    if (galleryEl) {
+      galleryEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      window.scrollBy({ top: 420, behavior: 'smooth' });
+    }
+  };
 
-      {/* Cute Baby Toys & Nursery Accents Background Overlay */}
+  return (
+    <section className="hero-anim-bg relative overflow-hidden pt-12 pb-14 sm:pt-16 sm:pb-20 border-b border-[var(--border-subtle)] bg-gradient-to-b from-[#0B1D35] via-[#071426] to-[var(--bg-primary)] [.light_&]:from-[#E6F1FB] [.light_&]:via-[#EFF6FC] [.light_&]:to-[#F4F8FC]">
+      {/* Subtle Night Sky Overlay (Crescent Moon, Drifting Clouds, Twinkling Stars, Sparkles) */}
       <HeroBabyToysOverlay />
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center relative z-10">
-        {/* Baby profile cover/avatar if available */}
-        {settings.coverPhotoUrl ? (
-          <div className="relative inline-block mb-5">
-            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full p-1 bg-gradient-to-tr from-sky-300 via-blue-200 to-sky-400 shadow-md shadow-sky-100">
-              <img
-                src={settings.coverPhotoUrl}
-                alt={settings.babyName}
-                className="w-full h-full object-cover rounded-full bg-sky-50"
-              />
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center relative z-10">
+        {/* Celestial Emblem: ✦  ☾  ✦ or Baby Cover Avatar */}
+        <div className="hero-anim-sky mb-5 flex flex-col items-center justify-center">
+          {settings.coverPhotoUrl ? (
+            <div className="relative inline-block mb-3">
+              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full p-1 bg-gradient-to-tr from-[#6FA8DC] via-[#A9D6F5] to-[#F3C9D9] shadow-[0_0_30px_rgba(111,168,220,0.3)]">
+                <img
+                  src={settings.coverPhotoUrl}
+                  alt={settings.babyName}
+                  className="w-full h-full object-cover rounded-full bg-[#102642]"
+                />
+              </div>
+              <span className="absolute bottom-0 right-0 p-1.5 bg-[#102642] text-[#F3C9D9] rounded-full shadow-xs border border-[#A9D6F5]/30">
+                <Heart className="w-3.5 h-3.5 fill-[#F3C9D9] text-[#F3C9D9]" />
+              </span>
             </div>
-            <span className="absolute bottom-0 right-0 p-1.5 bg-white text-sky-500 rounded-full shadow-xs border border-sky-100">
-              <Heart className="w-3.5 h-3.5 fill-sky-400 text-sky-400" />
+          ) : null}
+
+          <div
+            className="inline-flex items-center gap-4 text-[#A9D6F5] [.light_&]:text-[#3B82C4]"
+            aria-hidden="true"
+          >
+            <TinySparkleSvg className="w-3.5 h-3.5 text-[#A9D6F5] animate-night-sparkle" />
+            <span className="text-lg sm:text-xl leading-none text-[#D9ECFF] [.light_&]:text-[#2563EB] drop-shadow-[0_0_10px_rgba(217,236,255,0.45)]">
+              ☾
             </span>
+            <TinySparkleSvg
+              className="w-3.5 h-3.5 text-[#F3C9D9] animate-night-sparkle"
+              style={{ animationDelay: '1.6s' } as React.CSSProperties}
+            />
           </div>
-        ) : (
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/90 border border-sky-200 text-sky-700 text-xs font-semibold tracking-wide uppercase shadow-xs mb-4">
-            <Sparkles className="w-3.5 h-3.5 text-sky-400" />
-            <span>Digital Keepsake</span>
-          </div>
-        )}
+        </div>
 
-        {/* Baby Name Title */}
-        <h1 className="font-serif text-3xl sm:text-5xl font-bold tracking-tight text-slate-900 leading-tight">
-          {settings.babyName || 'KEION ARKIN DE LA CRUZ'}
-        </h1>
+        {/* Baby Name Title (400-900ms) */}
+        <div className="hero-anim-name">
+          <h1 className="font-serif text-3xl sm:text-5xl md:text-[3.35rem] font-semibold tracking-wide text-[var(--text-primary)] leading-tight text-balance drop-shadow-[0_2px_18px_rgba(111,168,220,0.14)]">
+            {settings.babyName || 'KEION ARKIN DE LA CRUZ'}
+          </h1>
 
-        {/* Birthdate & Age badge */}
-        {settings.birthDate && (
-          <div className="inline-flex items-center gap-2 mt-3 text-xs sm:text-sm font-medium text-slate-500 bg-white/80 px-3.5 py-1.5 rounded-full border border-slate-200/80 shadow-2xs">
-            <Calendar className="w-3.5 h-3.5 text-sky-500" />
-            <span>Born {new Date(settings.birthDate).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}</span>
-            {ageText && (
-              <>
-                <span className="w-1 h-1 rounded-full bg-sky-300"></span>
-                <span className="text-sky-600 font-semibold">{ageText}</span>
-              </>
-            )}
-          </div>
-        )}
+          {/* Birthdate & Age line */}
+          {settings.birthDate && (
+            <div className="mt-3 inline-flex items-center justify-center flex-wrap gap-2 text-xs sm:text-sm text-[var(--text-secondary)]">
+              <Calendar className="w-3.5 h-3.5 text-[#6FA8DC]" />
+              <span>
+                Born{' '}
+                {new Date(settings.birthDate).toLocaleDateString(undefined, {
+                  month: 'long',
+                  day: 'numeric',
+                  year: 'numeric',
+                })}
+              </span>
+              {ageText && (
+                <>
+                  <span aria-hidden="true" className="text-[#6FA8DC]/60">
+                    ·
+                  </span>
+                  <span className="text-[#A9D6F5] [.light_&]:text-[#2563EB] font-medium">
+                    {ageText}
+                  </span>
+                </>
+              )}
+            </div>
+          )}
+        </div>
 
-        {/* Sentimental Quote */}
-        <blockquote className="mt-5 max-w-xl mx-auto font-serif italic text-lg sm:text-xl text-slate-700">
-          “{settings.heroQuote || 'Little Moments, Big Memories'}”
+        {/* Sentimental Hero Quote (600-1100ms) */}
+        <blockquote className="hero-anim-quote mt-6 max-w-xl mx-auto font-serif italic text-xl sm:text-2xl text-[#D9ECFF] [.light_&]:text-[#1E3A5F] leading-snug text-balance">
+          “{settings.heroQuote || 'Little moments, Big memories'}”
         </blockquote>
 
-        <p className="mt-2 text-sm sm:text-base text-slate-500 max-w-lg mx-auto font-light leading-relaxed">
+        {/* Hero Subtitle (800-1300ms) */}
+        <p className="hero-anim-subtitle mt-3 text-sm sm:text-base text-[var(--text-secondary)] max-w-lg mx-auto font-light leading-relaxed text-balance">
           {settings.heroSubtitle ||
-            'Every little moment becomes a memory worth keeping forever.'}
+            'Every little smile, crawl, and giggle becomes a treasure worth keeping forever.'}
         </p>
 
-        {/* Stat badges */}
-        <div className="mt-7 flex items-center justify-center gap-3 sm:gap-6 text-xs sm:text-sm font-medium text-slate-600">
-          <div className="px-3.5 py-1.5 rounded-xl bg-white border border-slate-200/60 shadow-2xs">
-            <span className="font-bold text-slate-800">{totalMemories}</span> Memories
-          </div>
-          <div className="px-3.5 py-1.5 rounded-xl bg-white border border-slate-200/60 shadow-2xs">
-            <span className="font-bold text-sky-600">{totalPhotos}</span> Photos
-          </div>
-          <div className="px-3.5 py-1.5 rounded-xl bg-white border border-slate-200/60 shadow-2xs">
-            <span className="font-bold text-blue-600">{totalVideos}</span> Videos
+        {/* CTA Button & Quiet Metadata Summary (1000-1500ms) */}
+        <div className="hero-anim-cta mt-8 flex flex-col items-center gap-5">
+          <button
+            type="button"
+            onClick={handleScrollToMemories}
+            className="btn-night-primary px-6 py-2.5 rounded-full text-xs sm:text-sm inline-flex items-center gap-2 cursor-pointer"
+          >
+            <span>View Memories</span>
+            <ArrowDown className="w-4 h-4" />
+          </button>
+
+          {/* Clean unboxed keepsake counters */}
+          <div className="flex items-center justify-center flex-wrap gap-3 sm:gap-4 text-xs sm:text-sm text-[var(--text-muted)] tabular-nums">
+            <span>
+              <strong className="font-semibold text-[var(--text-primary)]">{totalMemories}</strong>{' '}
+              Memories
+            </span>
+            <span aria-hidden="true">·</span>
+            <span>
+              <strong className="font-semibold text-[#A9D6F5] [.light_&]:text-[#2563EB]">
+                {totalPhotos}
+              </strong>{' '}
+              Photos
+            </span>
+            <span aria-hidden="true">·</span>
+            <span>
+              <strong className="font-semibold text-[#F3C9D9] [.light_&]:text-[#DB2777]">
+                {totalVideos}
+              </strong>{' '}
+              Videos
+            </span>
           </div>
         </div>
       </div>

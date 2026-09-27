@@ -1,10 +1,46 @@
 @import "tailwindcss";
 
+:root {
+  --bg-primary: #071426;
+  --bg-secondary: #0B1D35;
+  --bg-card: #102642;
+  --bg-card-hover: #153052;
+  --bg-elevated: #132C4C;
+  --border-subtle: rgba(169, 214, 245, 0.14);
+  --border-hover: rgba(169, 214, 245, 0.32);
+  --text-primary: #F0F7FF;
+  --text-secondary: #B8D4EE;
+  --text-muted: #7EA3C8;
+  --accent-soft-blue: #6FA8DC;
+  --accent-light-blue: #A9D6F5;
+  --accent-ice: #D9ECFF;
+  --accent-pink: #F3C9D9;
+}
+
+html.light {
+  --bg-primary: #F4F8FC;
+  --bg-secondary: #EBF3FA;
+  --bg-card: #FFFFFF;
+  --bg-card-hover: #F8FBFF;
+  --bg-elevated: #FFFFFF;
+  --border-subtle: rgba(111, 168, 220, 0.22);
+  --border-hover: rgba(111, 168, 220, 0.45);
+  --text-primary: #0F2540;
+  --text-secondary: #365577;
+  --text-muted: #6482A3;
+  --accent-soft-blue: #3B82C4;
+  --accent-light-blue: #2563EB;
+  --accent-ice: #E0F2FE;
+  --accent-pink: #E899B5;
+}
+
 @layer base {
   body {
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    background-color: #F8FAFC;
-    color: #1E293B;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    letter-spacing: 0.01em;
+    transition: background-color 220ms ease, color 220ms ease;
   }
 
   h1, h2, h3, .font-serif {
@@ -12,89 +48,269 @@
   }
 }
 
-/* Custom smooth transitions & animations */
+/* ============================================================================
+   Theme Surface & Typography Helpers (Dark Blue Primary + Light Mode Support)
+   ============================================================================ */
+
+.night-canvas {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.night-surface-secondary {
+  background-color: var(--bg-secondary);
+  border-color: var(--border-subtle);
+}
+
+.night-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  box-shadow: 0 10px 30px -10px rgba(4, 12, 24, 0.55);
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 200ms ease,
+              box-shadow 200ms ease,
+              background-color 200ms ease;
+}
+
+html.light .night-card {
+  box-shadow: 0 10px 28px -10px rgba(15, 37, 64, 0.07);
+}
+
+.night-card-interactive:hover {
+  transform: translateY(-2px) scale(1.008);
+  border-color: var(--border-hover);
+  box-shadow: 0 16px 36px -10px rgba(111, 168, 220, 0.18),
+              0 0 22px -6px rgba(169, 214, 245, 0.12);
+}
+
+.btn-night-primary {
+  background: linear-gradient(135deg, #5294CE 0%, #6FA8DC 55%, #89BEEB 100%);
+  color: #061325;
+  font-weight: 600;
+  border: 1px solid rgba(217, 236, 255, 0.38);
+  box-shadow: 0 8px 22px -6px rgba(111, 168, 220, 0.42);
+  transition: transform 180ms ease, filter 180ms ease, box-shadow 180ms ease;
+}
+
+.btn-night-primary:hover:not(:disabled) {
+  transform: translateY(-1.5px);
+  filter: brightness(1.06);
+  box-shadow: 0 12px 28px -6px rgba(169, 214, 245, 0.52);
+}
+
+.btn-night-secondary {
+  background-color: rgba(16, 38, 66, 0.78);
+  color: #D9ECFF;
+  border: 1px solid rgba(169, 214, 245, 0.22);
+  transition: transform 180ms ease, background-color 180ms ease, border-color 180ms ease;
+}
+
+html.light .btn-night-secondary {
+  background-color: rgba(255, 255, 255, 0.9);
+  color: #1E3A5F;
+  border: 1px solid rgba(111, 168, 220, 0.32);
+}
+
+.btn-night-secondary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  background-color: rgba(24, 54, 92, 0.92);
+  border-color: rgba(169, 214, 245, 0.42);
+}
+
+html.light .btn-night-secondary:hover:not(:disabled) {
+  background-color: #F0F7FF;
+  border-color: rgba(59, 130, 196, 0.5);
+}
+
+/* ============================================================================
+   Hero Staggered Entrance Animations (0ms – 1500ms)
+   ============================================================================ */
+
+@keyframes heroBgFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes heroSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hero-anim-bg {
+  opacity: 0;
+  animation: heroBgFade 600ms cubic-bezier(0.16, 1, 0.3, 1) 0ms forwards;
+}
+
+.hero-anim-sky {
+  opacity: 0;
+  animation: heroBgFade 650ms cubic-bezier(0.16, 1, 0.3, 1) 150ms forwards;
+}
+
+.hero-anim-name {
+  opacity: 0;
+  animation: heroSlideUp 500ms cubic-bezier(0.16, 1, 0.3, 1) 400ms forwards;
+}
+
+.hero-anim-quote {
+  opacity: 0;
+  animation: heroSlideUp 500ms cubic-bezier(0.16, 1, 0.3, 1) 600ms forwards;
+}
+
+.hero-anim-subtitle {
+  opacity: 0;
+  animation: heroSlideUp 500ms cubic-bezier(0.16, 1, 0.3, 1) 800ms forwards;
+}
+
+.hero-anim-cta {
+  opacity: 0;
+  animation: heroSlideUp 500ms cubic-bezier(0.16, 1, 0.3, 1) 1000ms forwards;
+}
+
+/* ============================================================================
+   Subtle Baby Night Sky Keyframes (Stars, Crescent Moon, Clouds, Sparkles)
+   ============================================================================ */
+
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
+  from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 .animate-fade-in {
-  animation: fadeIn 0.25s ease-out forwards;
+  animation: fadeIn 200ms ease-out forwards;
 }
 
-/* Cute baby animations */
-@keyframes babyFloat {
+@keyframes twinkle {
   0%, 100% {
-    transform: translateY(0px) rotate(0deg);
+    opacity: 0.24;
+    transform: scale(0.9);
   }
   50% {
-    transform: translateY(-10px) rotate(2deg);
+    opacity: 0.76;
+    transform: scale(1.05);
   }
 }
 
-@keyframes babyFloatReverse {
+@keyframes sparkleFade {
   0%, 100% {
-    transform: translateY(0px) rotate(0deg);
+    opacity: 0.18;
+    transform: scale(0.88);
   }
   50% {
-    transform: translateY(-8px) rotate(-2.5deg);
+    opacity: 0.65;
+    transform: scale(1.06);
   }
 }
 
-@keyframes babyFloatSlow {
+@keyframes moonFloat {
   0%, 100% {
-    transform: translateY(0px) rotate(0deg);
+    transform: translateY(0px);
   }
   50% {
-    transform: translateY(-14px) rotate(1.5deg);
+    transform: translateY(-5px);
   }
 }
 
-@keyframes babyRock {
+@keyframes cloudDriftSlow {
   0%, 100% {
-    transform: rotate(-3deg);
+    transform: translateX(0px);
   }
   50% {
-    transform: rotate(3.5deg);
+    transform: translateX(14px);
   }
 }
 
-@keyframes babyTwinkle {
+@keyframes cloudDriftReverse {
   0%, 100% {
-    opacity: 0.35;
-    transform: scale(0.92);
+    transform: translateX(0px);
   }
   50% {
-    opacity: 0.9;
-    transform: scale(1.08);
+    transform: translateX(-12px);
   }
 }
 
+@keyframes heartFloatSubtle {
+  0%, 100% {
+    opacity: 0.28;
+    transform: translateY(0px) scale(0.96);
+  }
+  50% {
+    opacity: 0.52;
+    transform: translateY(-6px) scale(1.02);
+  }
+}
+
+.animate-night-twinkle {
+  animation: twinkle 6.5s ease-in-out infinite;
+}
+
+.animate-night-sparkle {
+  animation: sparkleFade 8s ease-in-out infinite;
+}
+
+.animate-moon-float {
+  animation: moonFloat 11s ease-in-out infinite;
+}
+
+.animate-cloud-drift {
+  animation: cloudDriftSlow 22s ease-in-out infinite;
+}
+
+.animate-cloud-drift-reverse {
+  animation: cloudDriftReverse 26s ease-in-out infinite;
+}
+
+.animate-heart-float {
+  animation: heartFloatSubtle 9s ease-in-out infinite;
+}
+
+/* Keep legacy class aliases mapped to calm night-sky motion so nothing breaks */
 .animate-baby-float {
-  animation: babyFloat 5s ease-in-out infinite;
+  animation: moonFloat 9s ease-in-out infinite;
 }
-
 .animate-baby-float-reverse {
-  animation: babyFloatReverse 6s ease-in-out infinite;
+  animation: cloudDriftReverse 18s ease-in-out infinite;
 }
-
 .animate-baby-float-slow {
-  animation: babyFloatSlow 7.5s ease-in-out infinite;
+  animation: cloudDriftSlow 22s ease-in-out infinite;
 }
-
 .animate-baby-rock {
-  transform-origin: bottom center;
-  animation: babyRock 4s ease-in-out infinite;
+  animation: moonFloat 10s ease-in-out infinite;
 }
-
 .animate-baby-twinkle {
-  animation: babyTwinkle 3.5s ease-in-out infinite;
+  animation: twinkle 6s ease-in-out infinite;
 }
 
-/* Soft baby blue glassmorphism & cards */
-.glass-panel {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(226, 232, 240, 0.8);
+/* ============================================================================
+   Accessibility: Respect prefers-reduced-motion
+   ============================================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-anim-bg,
+  .hero-anim-sky,
+  .hero-anim-name,
+  .hero-anim-quote,
+  .hero-anim-subtitle,
+  .hero-anim-cta,
+  .animate-fade-in,
+  .animate-night-twinkle,
+  .animate-night-sparkle,
+  .animate-moon-float,
+  .animate-cloud-drift,
+  .animate-cloud-drift-reverse,
+  .animate-heart-float,
+  .animate-baby-float,
+  .animate-baby-float-reverse,
+  .animate-baby-float-slow,
+  .animate-baby-rock,
+  .animate-baby-twinkle {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }
