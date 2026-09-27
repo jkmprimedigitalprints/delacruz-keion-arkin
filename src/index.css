@@ -314,3 +314,14 @@ html.light .btn-night-secondary:hover:not(:disabled) {
     transform: none !important;
   }
 }
+
+html,
+body {
+  scrollbar-width: none; 
+  -ms-overflow-style: none; 
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none; 
+}
