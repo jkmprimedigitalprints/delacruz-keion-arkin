@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import {
   supabase,
   SUPABASE_STORAGE_BUCKET,
@@ -370,20 +369,172 @@ export async function deleteMultipleCloudMediaFiles(
 }
 
 // ============================================================================
-// Client-Side Media URL Resolution Hook
+// Client-Side Media URL Resolution & Session Image Preload Cache
 // ============================================================================
 
 const memoryBlobUrlCache = new Map<string, string>();
+const MAX_CACHED_IMAGES = 80;
+const preloadedImagesCache = new Map<string, HTMLImageElement>();
+const loadedImageUrls = new Set<string>();
+const inFlightPreloads = new Map<string, Promise<boolean>>();
+const preloadedVideoMetadataUrls = new Set<string>();
+
+function rememberLoadedImage(url: string, img?: HTMLImageElement) {
+  loadedImageUrls.add(url);
+  if (img) {
+    if (preloadedImagesCache.has(url)) {
+      preloadedImagesCache.delete(url);
+    } else if (preloadedImagesCache.size >= MAX_CACHED_IMAGES) {
+      const oldestKey = preloadedImagesCache.keys().next().value;
+      if (oldestKey) {
+        preloadedImagesCache.delete(oldestKey);
+      }
+    }
+    preloadedImagesCache.set(url, img);
+  }
+}
+
+/**
+ * Returns true if the given image URL has already been downloaded and decoded in this session.
+ */
+export function isImageCached(url?: string | null): boolean {
+  if (!url) return false;
+  return loadedImageUrls.has(url);
+}
+
+/**
+ * Marks an image URL as loaded in the session cache (e.g., when an <img> fires onLoad).
+ */
+export function markImageCached(url?: string | null): void {
+  if (!url) return;
+  rememberLoadedImage(url);
+}
+
+/**
+ * Preloads a single image URL into browser memory and decodes it asynchronously.
+ */
+export function preloadImage(
+  url?: string | null,
+  priority: 'high' | 'low' = 'low'
+): Promise<boolean> {
+  if (!url) return Promise.resolve(false);
+  if (loadedImageUrls.has(url)) return Promise.resolve(true);
+
+  const existingPromise = inFlightPreloads.get(url);
+  if (existingPromise) return existingPromise;
+
+  const promise = new Promise<boolean>((resolve) => {
+    const img = new Image();
+    img.decoding = 'async';
+    if ('fetchPriority' in img) {
+      (img as any).fetchPriority = priority;
+    }
+
+    const finalize = (success: boolean) => {
+      inFlightPreloads.delete(url);
+      if (success) {
+        rememberLoadedImage(url, img);
+      }
+      resolve(success);
+    };
+
+    img.onload = () => {
+      if (typeof img.decode === 'function') {
+        img
+          .decode()
+          .then(() => finalize(true))
+          .catch(() => finalize(true));
+      } else {
+        finalize(true);
+      }
+    };
+
+    img.onerror = () => {
+      finalize(false);
+    };
+
+    img.src = url;
+  });
+
+  inFlightPreloads.set(url, promise);
+  return promise;
+}
+
+/**
+ * Lightweight metadata-only warmup for adjacent video items without downloading the full video.
+ */
+function preloadVideoMetadataOnly(videoUrl?: string | null) {
+  if (!videoUrl || typeof document === 'undefined') return;
+  if (preloadedVideoMetadataUrls.has(videoUrl)) return;
+  preloadedVideoMetadataUrls.add(videoUrl);
+
+  try {
+    const video = document.createElement('video');
+    video.preload = 'metadata';
+    video.muted = true;
+    video.playsInline = true;
+    video.src = videoUrl;
+  } catch {
+    // Ignore metadata warmup errors
+  }
+}
+
+/**
+ * Preloads only the specific window of memories around the active item:
+ * - current (index)
+ * - previous (index - 1)
+ * - next (index + 1)
+ * - next + 1 (index + 2)
+ * Never preloads the entire gallery.
+ */
+export function preloadViewerWindow(
+  memoriesList: Array<{
+    type: 'photo' | 'video';
+    mediaUrl?: string | null;
+    thumbnailUrl?: string | null;
+    posterUrl?: string | null;
+  }>,
+  currentIndex: number
+): void {
+  if (currentIndex < 0 || currentIndex >= memoriesList.length) return;
+
+  const indicesToPreload: Array<{ idx: number; priority: 'high' | 'low' }> = [
+    { idx: currentIndex, priority: 'high' },
+    { idx: currentIndex + 1, priority: 'high' },
+    { idx: currentIndex - 1, priority: 'high' },
+    { idx: currentIndex + 2, priority: 'low' },
+  ];
+
+  for (const { idx, priority } of indicesToPreload) {
+    if (idx < 0 || idx >= memoriesList.length) continue;
+    const item = memoriesList[idx];
+    if (!item) continue;
+
+    if (item.type === 'video') {
+      const poster = item.posterUrl || item.thumbnailUrl;
+      if (poster) {
+        preloadImage(poster, priority);
+      }
+      if (idx === currentIndex + 1 && item.mediaUrl) {
+        preloadVideoMetadataOnly(item.mediaUrl);
+      }
+    } else {
+      if (item.thumbnailUrl && item.thumbnailUrl !== item.mediaUrl) {
+        preloadImage(item.thumbnailUrl, priority);
+      }
+      if (item.mediaUrl) {
+        preloadImage(item.mediaUrl, priority);
+      }
+    }
+  }
+}
 
 export function useResolvedMediaUrl(rawUrl?: string | null): {
   resolvedUrl: string | null;
   isResolving: boolean;
 } {
-  const [resolvedUrl, setResolvedUrl] = useState<string | null>(rawUrl || null);
-
-  useEffect(() => {
-    setResolvedUrl(rawUrl || null);
-  }, [rawUrl]);
-
-  return { resolvedUrl, isResolving: false };
+  return {
+    resolvedUrl: rawUrl || null,
+    isResolving: false,
+  };
 }

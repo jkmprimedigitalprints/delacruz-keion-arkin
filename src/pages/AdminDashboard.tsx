@@ -401,6 +401,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
                   <img
                     src={m.thumbnailUrl || m.mediaUrl}
                     alt={m.title || 'Memory'}
+                    loading="lazy"
+                    decoding="async"
+                    onError={(e) => {
+                      const target = e.currentTarget;
+                      if (m.mediaUrl && target.src !== m.mediaUrl) {
+                        target.src = m.mediaUrl;
+                      }
+                    }}
                     className="w-full h-full object-cover group-hover:scale-105 transition duration-200 bg-slate-50"
                   />
                 )}

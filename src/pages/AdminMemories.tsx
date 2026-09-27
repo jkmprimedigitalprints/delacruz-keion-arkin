@@ -24,6 +24,7 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { ConfirmDialog } from '../components/ConfirmDialog';
+import { Lightbox } from '../components/Lightbox';
 import { useToast } from '../components/Toast';
 
 interface AdminMemoriesProps {
@@ -57,6 +58,7 @@ export const AdminMemories: React.FC<AdminMemoriesProps> = ({ navigate }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isConfirmDeleteAllOpen, setIsConfirmDeleteAllOpen] = useState(false);
   const [isDeletingAll, setIsDeletingAll] = useState(false);
+  const [previewMemory, setPreviewMemory] = useState<Memory | null>(null);
 
   useEffect(() => {
     const unsubMemories = listenToMemories(
@@ -354,7 +356,10 @@ export const AdminMemories: React.FC<AdminMemoriesProps> = ({ navigate }) => {
                 className="bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs hover:shadow-md transition flex flex-col justify-between"
               >
                 {/* Media preview */}
-                <div className="relative aspect-4/3 bg-slate-900 overflow-hidden">
+                <div
+                  onClick={() => setPreviewMemory(m)}
+                  className="relative aspect-4/3 bg-slate-900 overflow-hidden cursor-pointer group"
+                >
                   {m.type === 'video' ? (
                     <>
                       {m.posterUrl || m.thumbnailUrl ? (
@@ -362,13 +367,16 @@ export const AdminMemories: React.FC<AdminMemoriesProps> = ({ navigate }) => {
                           src={m.posterUrl || m.thumbnailUrl || ''}
                           alt={m.title}
                           loading="lazy"
-                          className="w-full h-full object-cover"
+                          decoding="async"
+                          className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-200"
                         />
                       ) : m.mediaUrl ? (
                         <video
                           src={m.mediaUrl}
                           preload="metadata"
-                          className="w-full h-full object-cover"
+                          muted
+                          playsInline
+                          className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-200"
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center bg-slate-900 text-sky-400">
@@ -386,7 +394,14 @@ export const AdminMemories: React.FC<AdminMemoriesProps> = ({ navigate }) => {
                       src={m.thumbnailUrl || m.mediaUrl}
                       alt={m.title}
                       loading="lazy"
-                      className="w-full h-full object-cover bg-slate-100"
+                      decoding="async"
+                      onError={(e) => {
+                        const target = e.currentTarget;
+                        if (m.mediaUrl && target.src !== m.mediaUrl) {
+                          target.src = m.mediaUrl;
+                        }
+                      }}
+                      className="w-full h-full object-cover bg-slate-100 group-hover:scale-103 transition-transform duration-200"
                     />
                   )}
                   <div className="absolute top-2 right-2 px-2 py-0.5 rounded-md bg-black/60 text-white text-[10px] font-semibold">
@@ -561,6 +576,15 @@ export const AdminMemories: React.FC<AdminMemoriesProps> = ({ navigate }) => {
           </div>
         </div>
       )}
+
+      {/* Lightbox Preview Modal */}
+      <Lightbox
+        memory={previewMemory}
+        memoriesList={filteredMemories}
+        albums={albums}
+        onClose={() => setPreviewMemory(null)}
+        onNavigate={(nextMem) => setPreviewMemory(nextMem)}
+      />
 
       {/* Delete Confirmation Dialog */}
       <ConfirmDialog

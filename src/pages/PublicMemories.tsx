@@ -11,6 +11,7 @@ import { Hero } from '../components/Hero';
 import { MemoryCard } from '../components/MemoryCard';
 import { Lightbox } from '../components/Lightbox';
 import { TeddyBearToy } from '../components/BabyToysBackground';
+import { preloadViewerWindow } from '../services/cloudMediaStorage';
 import {
   Image as ImageIcon,
   Film,
@@ -191,6 +192,13 @@ export const PublicMemories: React.FC<PublicMemoriesProps> = ({
   const handleLightboxNavigate = useCallback((memory: Memory) => {
     setActiveLightboxMemory(memory);
   }, []);
+
+  // Warm-preload the first photo and its immediate neighbor when the gallery settles
+  useEffect(() => {
+    if (filteredMemories.length > 0 && !activeLightboxMemory) {
+      preloadViewerWindow(filteredMemories, 0);
+    }
+  }, [filteredMemories, activeLightboxMemory]);
 
   return (
     <div className="min-h-screen pb-20">
